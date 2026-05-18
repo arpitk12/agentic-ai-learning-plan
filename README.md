@@ -1,19 +1,29 @@
 # Agentic AI — Production Learning Plan
-## 12 Weeks · Python Prerequisite · Project-First
 
-````markdown
-# Agentic AI — Production Learning Plan
-## 12 Weeks · Python Prerequisite · Project-First
+**12 Weeks · Python 3.11+ · Project-First**
+
+A structured, hands-on plan to go from LLM API basics to production-ready agentic AI systems. Every week has notes, exercises (no hints — figure it out), reference solutions, and curated resources. Each phase ends with a real project.
+
+Works with **local LLMs (Ollama)**, **free cloud (Groq, Gemini)**, or any paid provider — swap with one `.env` change. See [`FREE_CLOUD_LLM.md`](FREE_CLOUD_LLM.md) and [`LOCAL_LLM_SETUP.md`](LOCAL_LLM_SETUP.md).
+
+---
+
+## 🗂 Structure
 
 ```
 agentic_ai_learning_plan/
-├── phase1_foundations/          Weeks 1–2  · LLM APIs, Tool Use, ReAct
-├── phase2_memory_rag/           Weeks 3–4  · LangGraph, RAG, Hybrid Search
-├── phase3_multi_agent/          Weeks 5–6  · Orchestrators, Async Parallelism
-├── phase4_production/           Weeks 7–8  · FastAPI, SSE, Observability, Guardrails
-├── phase5_advanced/             Weeks 9–10 · Planning, Self-Reflection, Eval Pipelines
-├── phase6_capstone/             Weeks 11–12· MCP, Model Routing, Full-Stack Deploy
-└── projects/                    6 projects — one per phase, solutions kept separate
+├── phase1_foundations/          Weeks 1–2   · LLM APIs, Tool Use, ReAct
+├── phase2_memory_rag/           Weeks 3–4   · LangGraph, RAG, Hybrid Search
+├── phase3_multi_agent/          Weeks 5–6   · Orchestrators, Async Parallelism
+├── phase4_production/           Weeks 7–8   · FastAPI, SSE, Observability, Guardrails
+├── phase5_advanced/             Weeks 9–10  · Planning, Self-Reflection, Eval Pipelines
+├── phase6_capstone/             Weeks 11–12 · MCP, Model Routing, Full-Stack Deploy
+├── projects/                    6 projects — one per phase, solutions kept separate
+├── llm.py                       Unified LLM wrapper (local ↔ cloud, zero code change)
+├── .env.example                 Copy to .env and fill in your keys
+├── FREE_CLOUD_LLM.md            Groq, Gemini, Cerebras, OpenRouter setup
+├── LOCAL_LLM_SETUP.md           Ollama setup and model recommendations
+└── SECURITY.md                  Keeping API keys safe
 ```
 
 ---
@@ -22,12 +32,12 @@ agentic_ai_learning_plan/
 
 | Phase | Weeks | Core Skills | Project |
 |---|---|---|---|
-| 1 — Foundations | 1-2 | Anthropic SDK, tool calling, ReAct loop | Research Assistant CLI |
-| 2 — Memory & RAG | 3-4 | LangGraph, ChromaDB, hybrid search | Personal Knowledge Agent |
-| 3 — Multi-Agent | 5-6 | Orchestrator pattern, asyncio fan-out | Parallel Code Reviewer |
-| 4 — Production | 7-8 | FastAPI SSE, cost tracking, guardrails | Agent-as-a-Service API |
-| 5 — Advanced | 9-10 | Self-reflection, Reflexion, LLM-as-judge | Self-Improving Coding Agent |
-| 6 — Capstone | 11-12 | MCP, model routing, Docker deploy | Full-Stack Content Pipeline |
+| 1 — Foundations | 1–2 | LLM APIs, tool calling, ReAct loop | Research Assistant CLI |
+| 2 — Memory & RAG | 3–4 | LangGraph, ChromaDB, hybrid search | Personal Knowledge Agent |
+| 3 — Multi-Agent | 5–6 | Orchestrator pattern, asyncio fan-out | Parallel Code Reviewer |
+| 4 — Production | 7–8 | FastAPI SSE, cost tracking, guardrails | Agent-as-a-Service API |
+| 5 — Advanced | 9–10 | Self-reflection, Reflexion, LLM-as-judge | Self-Improving Coding Agent |
+| 6 — Capstone | 11–12 | MCP, model routing, Docker deploy | Full-Stack Content Pipeline |
 
 ---
 
@@ -37,7 +47,7 @@ agentic_ai_learning_plan/
 week_N/
 ├── notes.md           — concepts, patterns, code snippets, checklist
 ├── exercises/
-│   ├── ex1_*.py       — starter code (TODOs for you to fill in)
+│   ├── ex1_*.py       — starter code with TODOs (no hints — solve it yourself)
 │   ├── ex2_*.py
 │   └── solutions/
 │       ├── sol1_*.py  — full working implementations
@@ -48,7 +58,7 @@ week_N/
 
 ---
 
-## 🏗 Projects (one per phase)
+## 🏗 Projects
 
 ```
 projects/
@@ -60,27 +70,67 @@ projects/
 └── phase6_capstone/              Async multi-agent content pipeline (full-stack)
 ```
 
-Each project:
-- `README.md` — requirements, architecture diagram, setup, eval criteria
-- `starter.py` — scaffold with TODOs (where it exists)
+Each project has:
+- `README.md` — requirements, architecture, setup, eval criteria
+- `starter.py` — scaffold with TODOs (where provided)
 - `solution/solution.py` — full working implementation
 
 ---
 
 ## ⚡ Quick Start
 
+### Option A — Free cloud (Groq, recommended)
+
 ```bash
-pip install anthropic openai langchain langgraph langchain-anthropic \
-            langchain-core chromadb sentence-transformers rank-bm25 \
-            fastapi uvicorn pydantic structlog python-dotenv httpx \
-            pypdf tavily-python
+# 1. Clone and set up env
+cp .env.example .env
+# Edit .env: set MODEL=groq/llama-3.3-70b-versatile and GROQ_API_KEY=...
+# Get a free key at https://console.groq.com (no credit card)
+
+# 2. Install dependencies
+pip install litellm python-dotenv
+
+# 3. Run your first exercise
+python phase1_foundations/week1_llm_api/exercises/ex1_multiturn_chatbot.py
 ```
 
-Create `.env`:
+### Option B — Local (Ollama, fully offline)
+
+```bash
+brew install ollama
+ollama pull llama3.2
+ollama serve
+
+cp .env.example .env   # default MODEL=ollama/llama3.2 already set
+pip install litellm python-dotenv
+python phase1_foundations/week1_llm_api/exercises/ex1_multiturn_chatbot.py
 ```
-ANTHROPIC_API_KEY=sk-ant-...
-TAVILY_API_KEY=tvly-...      # free tier at tavily.com
-GITHUB_TOKEN=ghp_...         # for project 3 (GitHub PR fetcher)
+
+See [`FREE_CLOUD_LLM.md`](FREE_CLOUD_LLM.md) for Gemini, Cerebras, and OpenRouter options.
+
+---
+
+## 📦 Full Install Reference
+
+```bash
+# Core (all phases)
+pip install litellm python-dotenv pydantic httpx
+
+# Phase 2–3 (LangGraph + RAG)
+pip install langgraph langchain-community langchain-core
+pip install chromadb sentence-transformers rank-bm25 pypdf
+
+# Phase 3 (web search)
+pip install tavily-python
+
+# Phase 4 (API serving)
+pip install fastapi uvicorn structlog
+
+# Phase 5 (evaluation)
+pip install pytest deepeval
+
+# Week 3 LangGraph exercises specifically
+pip install langchain-community  # provides ChatLiteLLM
 ```
 
 ---
@@ -88,12 +138,12 @@ GITHUB_TOKEN=ghp_...         # for project 3 (GitHub PR fetcher)
 ## 📐 Recommended Pace
 
 1. **Read `notes.md`** — understand the concepts (30 min)
-2. **Do exercises** — fill in TODOs yourself before checking solutions (2–3 hrs)
-3. **Read solutions** — compare your approach (30 min)
-4. **Build project** — apply everything, deadline is end of the week (4–6 hrs)
-5. **Check resources/links.md** — go deeper on what interested you
+2. **Do exercises** — fill in TODOs yourself, no peeking at solutions (2–3 hrs)
+3. **Read solutions** — compare your approach, note differences (30 min)
+4. **Build the project** — apply everything end-to-end (4–6 hrs)
+5. **Check `resources/links.md`** — go deeper on what interested you
 
-> ⚠️ Don't skip Phase 4 (production). Most tutorials do. Real systems live or die there.
+> ⚠️ **Don't skip Phase 4 (production).** Most tutorials do. Real systems live or die there.
 
 ---
 
@@ -110,47 +160,10 @@ GITHUB_TOKEN=ghp_...         # for project 3 (GitHub PR fetcher)
 
 ---
 
-## 📦 Full Install Reference
+## 🔒 Security
 
-```bash
-# Phase 1-2
-pip install anthropic python-dotenv pydantic httpx
+- **Never commit `.env`** — it is gitignored; only `.env.example` (no real keys) is committed
+- **Never hardcode API keys** in `.py` files — always use `os.getenv()`
+- **Never paste `.env` contents into any LLM chat** (Copilot, ChatGPT, etc.)
 
-# Phase 2-3
-pip install langgraph langchain-anthropic langchain-core langsmith
-
-# Phase 2 RAG
-pip install chromadb sentence-transformers rank-bm25 pypdf
-
-# Phase 3
-pip install tavily-python  # web search
-
-# Phase 4
-pip install fastapi uvicorn structlog opentelemetry-sdk
-
-# Phase 5
-pip install pytest deepeval
-
-# Phase 6
-pip install litellm  # model routing + unified cost tracking
-```
-````
-
-## Quick Start
-Each phase folder contains:
-- `week_N/notes.md` — Topics, concepts, exercises
-- `week_N/exercises/` — Starter code to practice with
-- `week_N/resources/links.md` — Curated reading & videos
-
-Each project folder contains:
-- `README.md` — Project brief, requirements, hints
-- `starter.py` — Scaffold to get you going
-- `solution/` — Full working implementation
-
-## Prerequisites
-- Python 3.11+
-- `pip install anthropic openai python-dotenv pydantic`
-- Set `ANTHROPIC_API_KEY` in a `.env` file
-
-## Recommended Pace
-Complete all exercises before moving to the project. Don't skip Phase 4 (production) — most tutorials do, and it's where real systems live or die.
+See [`SECURITY.md`](SECURITY.md) for the full guide including key rotation and pre-push checklists.
