@@ -1,5 +1,8 @@
 # Week 1 Resources — LLM API Mastery
 
+## 🌟 Start Here
+- **Complete Guide: First Project → Production-Ready AI Agents**: https://medium.com/@devkapiltech/a-complete-guide-to-building-production-ready-ai-agents-from-your-first-afternoon-project-to-d5c2f3597565
+
 ## Official Docs
 - Anthropic Messages API: https://docs.anthropic.com/en/api/messages
 - Anthropic Python SDK: https://github.com/anthropics/anthropic-sdk-python

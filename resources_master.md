@@ -37,6 +37,7 @@
 | tavily-python | Web search tool |
 
 ## 📰 Newsletters & Blogs
+- **Complete Guide to Production-Ready AI Agents** (start here): https://medium.com/@devkapiltech/a-complete-guide-to-building-production-ready-ai-agents-from-your-first-afternoon-project-to-d5c2f3597565
 - The Batch (DeepLearning.AI): https://www.deeplearning.ai/the-batch/
 - Latent Space: https://www.latent.space/
 - Ahead of AI (Sebastian Raschka): https://magazine.sebastianraschka.com/
