@@ -2,16 +2,18 @@
 SOLUTION — Project 5: Self-Improving Coding Agent with Reflexion
 Reads failing tests → writes code → runs pytest → critiques → iterates.
 """
+import os
 import sys
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../.."))
+
 import json
 import subprocess
 import re
 from pathlib import Path
-from anthropic import Anthropic
 from dotenv import load_dotenv
+from llm import chat, get_text, get_tool_calls, stop_reason, assistant_message, tool_result_message
 
 load_dotenv()
-client = Anthropic()
 
 
 # ── Tools ──────────────────────────────────────────────────────────────────────
@@ -95,12 +97,12 @@ Write production-quality code with docstrings. Be concise and correct."""
 
 def critic_agent(code: str, test_results: str) -> str:
     """Independent critic evaluates code quality."""
-    r = client.messages.create(
-        model="claude-haiku-4-5-20251001", max_tokens=300,
+    r = chat(
+        [{"role": "user", "content": f"Test results:\n{test_results[:500]}\n\nCode:\n{code}"}],
         system="You are a code quality critic. Evaluate this code briefly. Focus on: correctness, edge cases, efficiency, readability.",
-        messages=[{"role": "user", "content": f"Test results:\n{test_results[:500]}\n\nCode:\n{code}"}],
+        max_tokens=300,
     )
-    return r.content[0].text
+    return get_text(r)
 
 
 # ── Main Agent Loop ────────────────────────────────────────────────────────────
@@ -140,28 +142,20 @@ def solve_problem(problem_dir: str, max_iterations: int = 5) -> dict:
             })
 
         while True:
-            response = client.messages.create(
-                model="claude-opus-4-5", max_tokens=2048,
-                system=SYSTEM, tools=TOOLS, messages=messages,
-            )
-            messages.append({"role": "assistant", "content": response.content})
+            response = chat(messages, system=SYSTEM, max_tokens=2048, tools=TOOLS)
+            messages.append(assistant_message(response))
 
-            if response.stop_reason == "end_turn":
+            if stop_reason(response) == "end_turn":
                 break
 
-            if response.stop_reason == "tool_use":
-                tool_results = []
+            if stop_reason(response) == "tool_use":
                 last_test_result = ""
-                for block in response.content:
-                    if block.type == "tool_use":
-                        result = TOOL_MAP[block.name](**block.input)
-                        print(f"     🔧 {block.name}({str(block.input)[:50]}) → {str(result)[:60]}")
-                        if block.name == "run_tests":
-                            last_test_result = result
-                        tool_results.append({
-                            "type": "tool_result", "tool_use_id": block.id, "content": result,
-                        })
-                messages.append({"role": "user", "content": tool_results})
+                for tc in get_tool_calls(response):
+                    result = TOOL_MAP[tc["name"]](**tc["arguments"])
+                    print(f"     🔧 {tc['name']}({str(tc['arguments'])[:50]}) → {str(result)[:60]}")
+                    if tc["name"] == "run_tests":
+                        last_test_result = result
+                    messages.append(tool_result_message(tc["id"], str(result)))
 
                 # Check if all tests passed
                 if last_test_result and "FAILED: 0" in last_test_result and "ERRORS: 0" in last_test_result:

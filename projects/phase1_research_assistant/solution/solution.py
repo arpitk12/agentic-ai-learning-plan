@@ -3,16 +3,17 @@ Project 1 SOLUTION — Research Assistant CLI
 Full working implementation.
 """
 import os
-import json
 import sys
-import httpx
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../.."))
+
+import json
 import re
+import httpx
 from pydantic import BaseModel
-from anthropic import Anthropic
 from dotenv import load_dotenv
+from llm import chat, get_text, get_tool_calls, stop_reason, assistant_message, tool_result_message
 
 load_dotenv()
-client = Anthropic()
 
 
 class ResearchReport(BaseModel):
@@ -99,41 +100,25 @@ def research(topic: str) -> ResearchReport:
 
     for step in range(max_steps):
         print(f"\n--- Step {step + 1} ---")
-        response = client.messages.create(
-            model="claude-opus-4-5",
-            max_tokens=4096,
-            system=SYSTEM_PROMPT,
-            tools=TOOLS,
-            messages=messages
-        )
+        response = chat(messages, system=SYSTEM_PROMPT, max_tokens=4096, tools=TOOLS)
 
         # Append assistant response to history
-        messages.append({"role": "assistant", "content": response.content})
+        messages.append(assistant_message(response))
 
-        if response.stop_reason == "end_turn":
+        if stop_reason(response) == "end_turn":
             # Extract JSON from final message
-            for block in response.content:
-                if hasattr(block, "text"):
-                    text = block.text.strip()
-                    # Strip markdown fences if present
-                    text = re.sub(r"```json|```", "", text).strip()
-                    data = json.loads(text)
-                    return ResearchReport(**data)
-            raise ValueError("No text in final response")
+            text = get_text(response).strip()
+            # Strip markdown fences if present
+            text = re.sub(r"```json|```", "", text).strip()
+            data = json.loads(text)
+            return ResearchReport(**data)
 
-        elif response.stop_reason == "tool_use":
-            tool_results = []
-            for block in response.content:
-                if block.type == "tool_use":
-                    result = run_tool(block.name, block.input)
-                    tool_results.append({
-                        "type": "tool_result",
-                        "tool_use_id": block.id,
-                        "content": result
-                    })
-            messages.append({"role": "user", "content": tool_results})
+        elif stop_reason(response) == "tool_use":
+            for tc in get_tool_calls(response):
+                result = run_tool(tc["name"], tc["arguments"])
+                messages.append(tool_result_message(tc["id"], result))
         else:
-            raise ValueError(f"Unexpected stop_reason: {response.stop_reason}")
+            raise ValueError(f"Unexpected stop_reason: {stop_reason(response)}")
 
     raise RuntimeError("Max steps reached without completing research")
 

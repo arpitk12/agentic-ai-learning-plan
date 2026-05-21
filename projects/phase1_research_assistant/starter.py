@@ -2,15 +2,18 @@
 Project 1 Starter — Research Assistant CLI
 Fill in the TODOs to complete the project.
 """
+import os
+import sys
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../.."))
+
 import json
 import re
 import httpx
 from pydantic import BaseModel
-from anthropic import Anthropic
 from dotenv import load_dotenv
+from llm import chat, get_text, get_tool_calls, stop_reason, assistant_message, tool_result_message
 
 load_dotenv()
-client = Anthropic()
 
 
 # --- Output Schema ---

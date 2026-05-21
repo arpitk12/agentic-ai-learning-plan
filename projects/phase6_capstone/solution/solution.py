@@ -6,17 +6,19 @@ Input: topic + brand voice document → blog post + social posts + email newslet
 Run:
     python solution.py "the future of wearable AI" --brand brand_voice.md
 """
-import asyncio
+import os
 import sys
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../.."))
+
+import asyncio
 import json
 import re
 from pathlib import Path
 from pydantic import BaseModel
-from anthropic import AsyncAnthropic
 from dotenv import load_dotenv
+from llm import achat, get_text
 
 load_dotenv()
-client = AsyncAnthropic()
 
 
 # ── Data Models ────────────────────────────────────────────────────────────────
@@ -48,13 +50,9 @@ class EditedContent(BaseModel):
 
 # ── Agent Helper ───────────────────────────────────────────────────────────────
 
-async def call_llm(system: str, user: str, model: str = "claude-opus-4-5", max_tokens: int = 2048) -> str:
-    r = await client.messages.create(
-        model=model, max_tokens=max_tokens,
-        system=system,
-        messages=[{"role": "user", "content": user}],
-    )
-    return r.content[0].text
+async def call_llm(system: str, user: str, max_tokens: int = 2048) -> str:
+    r = await achat([{"role": "user", "content": user}], system=system, max_tokens=max_tokens)
+    return get_text(r)
 
 
 # ── Agent 1: Researcher ────────────────────────────────────────────────────────

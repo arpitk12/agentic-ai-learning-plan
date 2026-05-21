@@ -12,6 +12,10 @@ Test:
     curl -X POST http://localhost:8000/jobs -H "Content-Type: application/json" \
          -d '{"pr_url": "https://github.com/owner/repo/pull/1", "user_id": "alice"}'
 """
+import os
+import sys
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../.."))
+
 import asyncio
 import json
 import uuid
@@ -22,22 +26,16 @@ from typing import AsyncGenerator
 from fastapi import FastAPI, HTTPException, Header
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
-from anthropic import AsyncAnthropic
 from dotenv import load_dotenv
+from llm import achat, get_text, calc_cost, MODEL
 
 load_dotenv()
 
-client = AsyncAnthropic()
 app = FastAPI(title="Agent API", version="1.0.0")
 
 # In-memory storage (replace with Redis in production)
 JOBS: dict[str, dict] = {}
 COST_LEDGER: dict[str, float] = {}  # user_id → total_usd
-
-COST_PER_1K = {
-    "claude-haiku-4-5-20251001": {"input": 0.00025, "output": 0.00125},
-    "claude-opus-4-5":           {"input": 0.015,   "output": 0.075},
-}
 
 
 class JobStatus(str, Enum):
@@ -81,9 +79,8 @@ def sanitize_input(text: str) -> str:
 
 # ── Cost Tracking ──────────────────────────────────────────────────────────────
 
-def track_cost(user_id: str, model: str, input_tokens: int, output_tokens: int) -> float:
-    rates = COST_PER_1K.get(model, COST_PER_1K["claude-haiku-4-5-20251001"])
-    cost = (input_tokens * rates["input"] + output_tokens * rates["output"]) / 1000
+def track_cost(user_id: str, input_tokens: int, output_tokens: int) -> float:
+    cost = calc_cost(MODEL, input_tokens, output_tokens)
     COST_LEDGER[user_id] = COST_LEDGER.get(user_id, 0) + cost
     return cost
 
@@ -103,7 +100,6 @@ async def run_agent_with_stream(job_id: str, pr_url: str, user_id: str, budget: 
         emit("status", "Starting code review...")
         emit("status", f"Fetching PR: {pr_url}")
 
-        # Simplified single-agent review (swap for full multi-agent in production)
         prompt = (
             f"Review this PR URL and provide a structured security, performance, style, "
             f"and testing analysis: {pr_url}\n\n"
@@ -111,21 +107,31 @@ async def run_agent_with_stream(job_id: str, pr_url: str, user_id: str, budget: 
         )
 
         emit("status", "Running AI review...")
-        full_text = ""
 
-        async with client.messages.stream(
-            model="claude-opus-4-5",
-            max_tokens=1500,
+        # Use LiteLLM async streaming via acompletion
+        from litellm import acompletion
+        response = await acompletion(
+            model=MODEL,
             messages=[{"role": "user", "content": prompt}],
-        ) as stream:
-            async for text in stream.text_stream:
-                full_text += text
-                emit("token", text)
+            max_tokens=1500,
+            stream=True,
+        )
 
-            final = await stream.get_final_message()
-            cost = track_cost(user_id, "claude-opus-4-5",
-                              final.usage.input_tokens, final.usage.output_tokens)
-            total_cost += cost
+        full_text = ""
+        input_tokens = 0
+        output_tokens = 0
+        async for chunk in response:
+            delta = chunk.choices[0].delta.content or ""
+            full_text += delta
+            if delta:
+                emit("token", delta)
+            # Capture usage if present in final chunk
+            if hasattr(chunk, "usage") and chunk.usage:
+                input_tokens = getattr(chunk.usage, "prompt_tokens", 0)
+                output_tokens = getattr(chunk.usage, "completion_tokens", 0)
+
+        cost = track_cost(user_id, input_tokens, output_tokens)
+        total_cost += cost
 
         if total_cost > budget:
             emit("warning", f"Budget exceeded: ${total_cost:.4f} > ${budget:.4f}")

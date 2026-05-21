@@ -2,15 +2,18 @@
 Project 5 Starter — Self-Improving Coding Agent
 Fill in the TODOs to build a reflexion-based coding agent.
 """
+import os
+import sys
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../.."))
+
 import subprocess
 import json
 from pathlib import Path
 from dataclasses import dataclass, field
-from anthropic import Anthropic
 from dotenv import load_dotenv
+from llm import chat, get_text
 
 load_dotenv()
-client = Anthropic()
 
 CODER_SYSTEM = """You are an expert Python developer.
 You will be given a test file. Write the implementation that makes all tests pass.

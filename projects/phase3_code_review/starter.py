@@ -2,18 +2,19 @@
 Project 3 Starter — Multi-Agent Code Review System
 Fill in the TODOs to complete the project.
 """
+import os
+import sys
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../.."))
+
 import asyncio
 import json
-import sys
 import re
 import httpx
 from pydantic import BaseModel
-from anthropic import AsyncAnthropic
 from dotenv import load_dotenv
-import os
+from llm import achat, get_text
 
 load_dotenv()
-client = AsyncAnthropic()
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "")
 
 

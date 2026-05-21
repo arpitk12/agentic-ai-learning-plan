@@ -3,17 +3,18 @@ SOLUTION — Project 2: Personal Knowledge Agent (RAG + LangGraph)
 """
 import os
 import sys
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../.."))
+
 import hashlib
 import sqlite3
 from pathlib import Path
 import chromadb
 from sentence_transformers import SentenceTransformer
-from anthropic import Anthropic
 from dotenv import load_dotenv
+from llm import chat, get_text
 
 load_dotenv()
 
-client = Anthropic()
 embedder = SentenceTransformer("all-MiniLM-L6-v2")
 chroma = chromadb.Client()
 
@@ -99,12 +100,12 @@ def ingest_docs(docs_dir: str, collection_name: str = "knowledge") -> chromadb.C
 
 def classify_query(query: str) -> str:
     """Route to: RAG | DIRECT"""
-    r = client.messages.create(
-        model="claude-haiku-4-5-20251001", max_tokens=10,
+    r = chat(
+        [{"role": "user", "content": query}],
         system="Reply with exactly one word: RAG or DIRECT. RAG = answer needs documents. DIRECT = general knowledge.",
-        messages=[{"role": "user", "content": query}],
+        max_tokens=10,
     )
-    return "RAG" if "RAG" in r.content[0].text.upper() else "DIRECT"
+    return "RAG" if "RAG" in get_text(r).upper() else "DIRECT"
 
 
 def rag_answer(query: str, collection: chromadb.Collection, history: list[dict]) -> str:
@@ -122,22 +123,18 @@ def rag_answer(query: str, collection: chromadb.Collection, history: list[dict])
         f"Context from documents:\n{context}\n\nQuestion: {query}\n\n"
         "Answer using only the context. Include source citations like [source: filename.ext]."}]
 
-    r = client.messages.create(
-        model="claude-opus-4-5", max_tokens=1024,
+    r = chat(
+        messages,
         system="You are a helpful assistant that answers questions using only provided document context.",
-        messages=messages,
+        max_tokens=1024,
     )
-    return r.content[0].text
+    return get_text(r)
 
 
 def direct_answer(query: str, history: list[dict]) -> str:
     messages = history[-6:] + [{"role": "user", "content": query}]
-    r = client.messages.create(
-        model="claude-opus-4-5", max_tokens=1024,
-        system="You are a helpful assistant.",
-        messages=messages,
-    )
-    return r.content[0].text
+    r = chat(messages, system="You are a helpful assistant.", max_tokens=1024)
+    return get_text(r)
 
 
 # ── CLI ────────────────────────────────────────────────────────────────────────

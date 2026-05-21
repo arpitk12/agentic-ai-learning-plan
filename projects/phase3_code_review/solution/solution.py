@@ -2,18 +2,19 @@
 SOLUTION — Project 3: Multi-Agent Code Review System
 4 parallel specialist reviewers + orchestrator aggregation.
 """
+import os
+import sys
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../.."))
+
 import asyncio
 import json
 import re
-import sys
 from pathlib import Path
 from pydantic import BaseModel
-from anthropic import AsyncAnthropic
 from dotenv import load_dotenv
-import os
+from llm import achat, get_text
 
 load_dotenv()
-client = AsyncAnthropic()
 
 
 # ── Data Models ────────────────────────────────────────────────────────────────
@@ -115,12 +116,8 @@ Be specific and actionable."""
         f"Diff:\n{diff}"
     )
 
-    r = await client.messages.create(
-        model="claude-opus-4-5", max_tokens=1024,
-        system=system,
-        messages=[{"role": "user", "content": prompt}],
-    )
-    raw = r.content[0].text
+    r = await achat([{"role": "user", "content": prompt}], system=system, max_tokens=1024)
+    raw = get_text(r)
     s = raw.find("{"); e = raw.rfind("}") + 1
     data = json.loads(raw[s:e])
     return ReviewCategory(category=role, **data)
@@ -170,13 +167,13 @@ async def review_pr(pr_url: str) -> CodeReviewReport:
 
     # Synthesize summary
     all_issues = security.issues + performance.issues + style.issues + testing.issues
-    r = await client.messages.create(
-        model="claude-haiku-4-5-20251001", max_tokens=300,
-        messages=[{"role": "user", "content":
+    r = await achat(
+        [{"role": "user", "content":
             f"Write a 2-sentence executive summary of this code review (score {overall}/100). "
             f"Issues found: {json.dumps(all_issues[:8])}"}],
+        max_tokens=300,
     )
-    summary = r.content[0].text
+    summary = get_text(r)
 
     return CodeReviewReport(
         pr_url=pr_url,
