@@ -37,6 +37,7 @@ Local setup (Ollama):
     ollama serve              # runs on http://localhost:11434
 """
 import os
+import json
 from dotenv import load_dotenv
 import litellm
 from litellm import completion, acompletion
@@ -97,6 +98,36 @@ def calc_cost(model: str, input_tokens: int, output_tokens: int) -> float:
     return (input_tokens * rates["input"] + output_tokens * rates["output"]) / 1000
 
 
+# ── Tool schema normalization ──────────────────────────────────────────────────
+
+def normalize_tools(tools: list[dict]) -> list[dict]:
+    """
+    Convert tools to OpenAI function-calling format.
+    Accepts both Anthropic format (input_schema) and OpenAI format (parameters).
+    LiteLLM then converts to the target provider format automatically.
+
+    Anthropic format (input):
+        {"name": "fn", "description": "...", "input_schema": {...}}
+    OpenAI format (input or output):
+        {"type": "function", "function": {"name": "fn", "description": "...", "parameters": {...}}}
+    """
+    normalized = []
+    for tool in tools:
+        if "input_schema" in tool:
+            # Anthropic → OpenAI
+            normalized.append({
+                "type": "function",
+                "function": {
+                    "name": tool["name"],
+                    "description": tool.get("description", ""),
+                    "parameters": tool["input_schema"],
+                },
+            })
+        else:
+            normalized.append(tool)
+    return normalized
+
+
 # ── Sync wrapper ───────────────────────────────────────────────────────────────
 
 def chat(
@@ -108,7 +139,7 @@ def chat(
     **kwargs,
 ):
     """
-    Unified sync chat call. Works with Ollama, Anthropic, and OpenAI.
+    Unified sync chat call. Works with Ollama, Groq, Anthropic, Gemini, OpenAI.
     Returns a litellm ModelResponse (same shape regardless of provider).
 
     response.choices[0].message.content  → text
@@ -120,7 +151,7 @@ def chat(
 
     params = dict(model=model, messages=messages, max_tokens=max_tokens, **kwargs)
     if tools:
-        params["tools"] = tools
+        params["tools"] = normalize_tools(tools)
 
     return completion(**params)
 
@@ -130,9 +161,61 @@ def get_text(response) -> str:
     return response.choices[0].message.content or ""
 
 
-def get_tool_calls(response) -> list:
-    """Extract tool calls from a LiteLLM response (empty list if none)."""
-    return response.choices[0].message.tool_calls or []
+def get_tool_calls(response) -> list[dict]:
+    """
+    Extract and normalize tool calls from any LiteLLM response.
+    Returns a list of dicts — same shape regardless of provider:
+        [{"id": str, "name": str, "arguments": dict}, ...]
+
+    Usage in exercises:
+        for tc in get_tool_calls(response):
+            result = my_tool(tc["name"], tc["arguments"])
+            messages.append(tool_result_message(tc["id"], result))
+    """
+    raw = response.choices[0].message.tool_calls or []
+    return [
+        {
+            "id": tc.id,
+            "name": tc.function.name,
+            "arguments": json.loads(tc.function.arguments or "{}"),
+        }
+        for tc in raw
+    ]
+
+
+def assistant_message(response) -> dict:
+    """
+    Return the assistant message dict ready to append to history.
+    Handles tool_calls serialization correctly for all providers.
+
+    Usage:
+        messages.append(assistant_message(response))
+    """
+    msg = response.choices[0].message
+    result = {"role": "assistant", "content": msg.content or ""}
+    if msg.tool_calls:
+        result["tool_calls"] = [
+            {
+                "id": tc.id,
+                "type": "function",
+                "function": {
+                    "name": tc.function.name,
+                    "arguments": tc.function.arguments,
+                },
+            }
+            for tc in msg.tool_calls
+        ]
+    return result
+
+
+def tool_result_message(tool_call_id: str, content: str) -> dict:
+    """
+    Build a tool result message to append to history.
+
+    Usage:
+        messages.append(tool_result_message(tc["id"], result))
+    """
+    return {"role": "tool", "tool_call_id": tool_call_id, "content": str(content)}
 
 
 def stop_reason(response) -> str:
@@ -161,7 +244,7 @@ async def achat(
         messages = [{"role": "system", "content": system}] + messages
     params = dict(model=model, messages=messages, max_tokens=max_tokens, **kwargs)
     if tools:
-        params["tools"] = tools
+        params["tools"] = normalize_tools(tools)
     return await acompletion(**params)
 
 

@@ -5,6 +5,8 @@ Track cost savings vs always using the best model.
 
 pip install litellm python-dotenv
 """
+import sys, os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../.."))
 from llm import chat, get_text, calc_cost, MODEL
 from dataclasses import dataclass, field
 

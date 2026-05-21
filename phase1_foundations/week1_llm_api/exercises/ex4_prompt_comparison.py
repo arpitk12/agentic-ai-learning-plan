@@ -73,7 +73,22 @@ def run_strategy(name: str, question: str) -> dict:
     Return a dict with keys:
       strategy, question_short, answer, input_tokens, output_tokens, cost_usd
     """
-    pass
+    strategy=STRATEGIES.get(name)
+    prompt={"role":"user","content":strategy["user_template"].format(question=question)}
+    response=chat(messages=[prompt],system=strategy["system"],max_tokens=512)
+    ans=get_text(response).strip()
+    input_token=response.usage.prompt_tokens
+    output_token=response.usage.completion_tokens
+    cost=calc_cost(MODEL,input_tokens=input_token,output_tokens=output_token)
+    return {
+        "strategy": name,
+        "question_short": question,
+        "answer":ans,
+        "input_tokens":input_token,
+        "output_tokens": output_token,
+        "cost_usd": cost
+    }
+    
 
 
 def print_comparison_table(results: list[dict]):
@@ -81,7 +96,12 @@ def print_comparison_table(results: list[dict]):
     TODO: Print a formatted table of results.
     Columns: Strategy | Answer (first 60 chars) | Input tok | Output tok | Cost
     """
-    pass
+    header = f"{'Strategy':<20} {'Answer (preview)':<55} {'In':>5} {'Out':>5} {'Cost':>8}"
+    print(header)
+    print("-" * len(header))
+    for res in results:
+        pre=res['answer'].replace("\n"," ")[:54]
+        print(f"{res['strategy']:<20} {pre:<55} {res['input_tokens']:>5} {res['output_tokens']:>5} {res['cost_usd']:>7.5}")
 
 
 if __name__ == "__main__":

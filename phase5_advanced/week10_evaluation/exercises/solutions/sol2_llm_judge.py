@@ -1,13 +1,16 @@
 """
 SOLUTION — Exercise 2: LLM-as-Judge Evaluation Pipeline
 """
+import os
+import sys
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../../.."))
+
 import json
 from pydantic import BaseModel
-from anthropic import Anthropic
 from dotenv import load_dotenv
+from llm import chat, get_text
 
 load_dotenv()
-client = Anthropic()
 
 
 class EvalCase(BaseModel):
@@ -56,12 +59,8 @@ Scoring: 5=perfect, 4=correct but verbose/imprecise, 3=partially correct, 2=most
 
 
 def agent_under_test(question: str) -> str:
-    r = client.messages.create(
-        model="claude-haiku-4-5-20251001",
-        max_tokens=256,
-        messages=[{"role": "user", "content": question}],
-    )
-    return r.content[0].text
+    r = chat([{"role": "user", "content": question}], max_tokens=256)
+    return get_text(r)
 
 
 def llm_judge(case: EvalCase, actual: str) -> EvalResult:
@@ -70,12 +69,8 @@ def llm_judge(case: EvalCase, actual: str) -> EvalResult:
         f"Expected: {case.expected}\n"
         f"Actual: {actual}"
     )
-    r = client.messages.create(
-        model="claude-haiku-4-5-20251001", max_tokens=256,
-        system=JUDGE_SYSTEM,
-        messages=[{"role": "user", "content": prompt}],
-    )
-    raw = r.content[0].text
+    r = chat([{"role": "user", "content": prompt}], system=JUDGE_SYSTEM, max_tokens=256)
+    raw = get_text(r)
     s = raw.find("{"); e = raw.rfind("}") + 1
     data = json.loads(raw[s:e])
     return EvalResult(

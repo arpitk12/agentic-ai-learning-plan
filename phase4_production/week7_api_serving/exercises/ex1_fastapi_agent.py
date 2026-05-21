@@ -6,7 +6,9 @@ pip install fastapi uvicorn litellm python-dotenv sse-starlette
 """
 import asyncio
 import json
-from llm import achat, stream_chat, get_text, get_tool_calls, stop_reason, MODEL
+import sys, os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../.."))
+from llm import achat, stream_chat, get_text, get_tool_calls, stop_reason, assistant_message, tool_result_message, MODEL
 from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel

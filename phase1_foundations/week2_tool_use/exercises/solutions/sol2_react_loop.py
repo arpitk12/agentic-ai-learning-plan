@@ -1,14 +1,16 @@
 """
 SOLUTION — Exercise 2: ReAct Loop from Scratch
 """
-import json
+import os
+import sys
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../../.."))
+
 import math
 import datetime
-from anthropic import Anthropic
 from dotenv import load_dotenv
+from llm import chat, get_text, get_tool_calls, stop_reason, assistant_message, tool_result_message
 
 load_dotenv()
-client = Anthropic()
 
 TOOLS = [
     {
@@ -58,37 +60,21 @@ def react_agent(user_query: str, max_steps: int = 10) -> str:
     for step in range(max_steps):
         print(f"\n--- Step {step + 1} ---")
 
-        response = client.messages.create(
-            model="claude-opus-4-5",
-            max_tokens=1024,
-            tools=TOOLS,
-            messages=messages,
-        )
+        response = chat(messages, max_tokens=1024, tools=TOOLS)
 
-        print(f"  stop_reason: {response.stop_reason}")
+        print(f"  stop_reason: {stop_reason(response)}")
 
-        # Always append the assistant turn first
-        messages.append({"role": "assistant", "content": response.content})
+        messages.append(assistant_message(response))
 
-        if response.stop_reason == "end_turn":
-            for block in response.content:
-                if hasattr(block, "text"):
-                    return block.text
-            return ""
+        if stop_reason(response) == "end_turn":
+            return get_text(response)
 
-        if response.stop_reason == "tool_use":
-            tool_results = []
-            for block in response.content:
-                if block.type == "tool_use":
-                    print(f"  [ACT]     {block.name}({json.dumps(block.input)})")
-                    result = run_tool(block.name, block.input)
-                    print(f"  [OBSERVE] → {result}")
-                    tool_results.append({
-                        "type": "tool_result",
-                        "tool_use_id": block.id,
-                        "content": result,
-                    })
-            messages.append({"role": "user", "content": tool_results})
+        if stop_reason(response) == "tool_use":
+            for tc in get_tool_calls(response):
+                print(f"  [ACT]     {tc['name']}({tc['arguments']})")
+                result = run_tool(tc["name"], tc["arguments"])
+                print(f"  [OBSERVE] → {result}")
+                messages.append(tool_result_message(tc["id"], result))
 
     return "[max_steps reached]"
 

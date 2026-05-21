@@ -1,13 +1,16 @@
 """
 SOLUTION — Exercise 2: Structured Output with Pydantic + Auto-Retry
 """
+import os
+import sys
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../../.."))
+
 import json
 from pydantic import BaseModel, ValidationError
-from anthropic import Anthropic
 from dotenv import load_dotenv
+from llm import chat, get_text
 
 load_dotenv()
-client = Anthropic()
 
 
 class ResearchSummary(BaseModel):
@@ -33,13 +36,8 @@ def get_structured_summary(topic: str, max_retries: int = 3) -> ResearchSummary:
     messages = [{"role": "user", "content": f"Summarize what you know about: {topic}"}]
 
     for attempt in range(max_retries):
-        response = client.messages.create(
-            model="claude-opus-4-5",
-            max_tokens=512,
-            system=SYSTEM_PROMPT,
-            messages=messages,
-        )
-        raw = response.content[0].text.strip()
+        response = chat(messages, system=SYSTEM_PROMPT, max_tokens=512)
+        raw = get_text(response).strip()
 
         try:
             data = json.loads(raw)

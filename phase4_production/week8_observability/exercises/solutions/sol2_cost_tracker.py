@@ -1,22 +1,19 @@
 """
 SOLUTION — Exercise 2: Budget-Limited Agent with Cost Tracking
 """
+import os
+import sys
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../../.."))
+
 import structlog
-from anthropic import Anthropic
 from dotenv import load_dotenv
 from dataclasses import dataclass
+from llm import chat, get_text, calc_cost, MODEL
 
 load_dotenv()
-client = Anthropic()
 log = structlog.get_logger()
 
-COST_PER_1K = {
-    "claude-haiku-4-5-20251001": {"input": 0.00025, "output": 0.00125},
-    "claude-sonnet-4-6":         {"input": 0.003,   "output": 0.015},
-    "claude-opus-4-6":           {"input": 0.015,   "output": 0.075},
-}
-
-DEFAULT_MODEL = "claude-haiku-4-5-20251001"
+DEFAULT_MODEL = MODEL
 
 
 @dataclass
@@ -29,8 +26,7 @@ class CostTracker:
     steps: int = 0
 
     def record(self, input_tokens: int, output_tokens: int):
-        rates = COST_PER_1K.get(self.model, COST_PER_1K[DEFAULT_MODEL])
-        cost = (input_tokens * rates["input"] + output_tokens * rates["output"]) / 1000
+        cost = calc_cost(self.model, input_tokens, output_tokens)
         self.total_input_tokens += input_tokens
         self.total_output_tokens += output_tokens
         self.total_cost_usd += cost
@@ -68,17 +64,15 @@ def budget_agent(query: str, budget_usd: float = 0.005, model: str = DEFAULT_MOD
             log.warning("budget_exceeded", **tracker.summary())
             return f"[BUDGET EXCEEDED after {tracker.steps} steps. Partial answer not available.]"
 
-        response = client.messages.create(
-            model=model,
-            max_tokens=512,
-            messages=messages,
-        )
-        tracker.record(response.usage.input_tokens, response.usage.output_tokens)
-        messages.append({"role": "assistant", "content": response.content[0].text})
+        response = chat(messages, model=model, max_tokens=512)
+        tracker.record(response.usage.prompt_tokens, response.usage.completion_tokens)
+        reply = get_text(response)
+        messages.append({"role": "assistant", "content": reply})
 
-        if response.stop_reason == "end_turn":
-            log.info("agent_complete", **tracker.summary())
-            return response.content[0].text
+        if stop_reason_val := response.choices[0].finish_reason:
+            if stop_reason_val == "stop":
+                log.info("agent_complete", **tracker.summary())
+                return reply
 
     return "[max steps reached]"
 

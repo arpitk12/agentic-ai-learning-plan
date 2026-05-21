@@ -5,6 +5,8 @@ Goal: Agent generates output, critic scores it, regenerate if below threshold.
 pip install anthropic python-dotenv pydantic
 """
 import json
+import sys, os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../.."))
 from pydantic import BaseModel
 from llm import chat, get_text, MODEL
 

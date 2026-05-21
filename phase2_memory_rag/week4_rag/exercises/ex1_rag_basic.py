@@ -4,6 +4,8 @@ Goal: Ingest a PDF, embed it, store in Chroma, and answer questions.
 
 pip install chromadb sentence-transformers pypdf litellm python-dotenv
 """
+import sys, os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../.."))
 import chromadb
 from sentence_transformers import SentenceTransformer
 from pypdf import PdfReader

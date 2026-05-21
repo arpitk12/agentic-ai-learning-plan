@@ -1,18 +1,22 @@
 """
 SOLUTION — Exercise 2: Intelligent Model Router
 """
+import os
+import sys
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../../.."))
+
 import re
-from anthropic import Anthropic
 from dotenv import load_dotenv
 from dataclasses import dataclass, field
+from llm import chat, get_text, calc_cost
 
 load_dotenv()
-client = Anthropic()
 
+# Map friendly names to LiteLLM model strings — update to match your provider
 MODELS = {
-    "haiku":  {"id": "claude-haiku-4-5-20251001",  "input": 0.00025, "output": 0.00125},
-    "sonnet": {"id": "claude-sonnet-4-6", "input": 0.003,   "output": 0.015},
-    "opus":   {"id": "claude-opus-4-6",   "input": 0.015,   "output": 0.075},
+    "haiku":  "groq/llama-3.1-8b-instant",
+    "sonnet": "groq/llama-3.3-70b-versatile",
+    "opus":   "groq/llama-3.3-70b-versatile",
 }
 
 
@@ -23,11 +27,9 @@ class RouterStats:
     opus_cost: float = 0.0
     model_counts: dict = field(default_factory=lambda: {"haiku": 0, "sonnet": 0, "opus": 0})
 
-    def record(self, model_key: str, input_tok: int, output_tok: int):
-        m = MODELS[model_key]
-        self.routed_cost += (input_tok * m["input"] + output_tok * m["output"]) / 1000
-        opus = MODELS["opus"]
-        self.opus_cost += (input_tok * opus["input"] + output_tok * opus["output"]) / 1000
+    def record(self, model_key: str, model_id: str, input_tok: int, output_tok: int):
+        self.routed_cost += calc_cost(model_id, input_tok, output_tok)
+        self.opus_cost += calc_cost(MODELS["opus"], input_tok, output_tok)
         self.calls += 1
         self.model_counts[model_key] += 1
 
@@ -83,15 +85,11 @@ def pick_model(query: str) -> str:
 def routed_call(query: str) -> tuple[str, str]:
     """Returns (response_text, model_key_used)."""
     model_key = pick_model(query)
-    model_id = MODELS[model_key]["id"]
+    model_id = MODELS[model_key]
 
-    response = client.messages.create(
-        model=model_id,
-        max_tokens=512,
-        messages=[{"role": "user", "content": query}],
-    )
-    stats.record(model_key, response.usage.input_tokens, response.usage.output_tokens)
-    return response.content[0].text, model_key
+    response = chat([{"role": "user", "content": query}], model=model_id, max_tokens=512)
+    stats.record(model_key, model_id, response.usage.prompt_tokens, response.usage.completion_tokens)
+    return get_text(response), model_key
 
 
 if __name__ == "__main__":

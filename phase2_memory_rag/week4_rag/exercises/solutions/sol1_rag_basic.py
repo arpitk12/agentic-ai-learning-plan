@@ -1,15 +1,18 @@
 """
 SOLUTION — Exercise 1: Basic RAG Pipeline
 """
+import os
+import sys
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../../.."))
+
 import chromadb
 from sentence_transformers import SentenceTransformer
 from pypdf import PdfReader
-from anthropic import Anthropic
 from dotenv import load_dotenv
+from llm import chat, get_text
 
 load_dotenv()
 
-client = Anthropic()
 embedder = SentenceTransformer("all-MiniLM-L6-v2")
 chroma = chromadb.Client()
 
@@ -49,16 +52,15 @@ def retrieve(query: str, collection: chromadb.Collection, top_k: int = 3) -> lis
 
 def answer(question: str, context_chunks: list[str]) -> str:
     context = "\n\n---\n\n".join(context_chunks)
-    response = client.messages.create(
-        model="claude-opus-4-5",
-        max_tokens=1024,
+    r = chat(
+        [{"role": "user", "content": f"Context:\n{context}\n\nQuestion: {question}"}],
         system=(
             "You are a helpful assistant. Answer the question using ONLY the provided context. "
             "If the answer is not in the context, say 'I don't know based on the provided documents.'"
         ),
-        messages=[{"role": "user", "content": f"Context:\n{context}\n\nQuestion: {question}"}],
+        max_tokens=1024,
     )
-    return response.content[0].text
+    return get_text(r)
 
 
 def rag_pipeline(pdf_path: str, question: str) -> str:

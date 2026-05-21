@@ -1,13 +1,16 @@
 """
 SOLUTION — Exercise 2: Self-Reflection / Critic Loop
 """
+import os
+import sys
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../../.."))
+
 import json
 from pydantic import BaseModel, ValidationError
-from anthropic import Anthropic
 from dotenv import load_dotenv
+from llm import chat, get_text
 
 load_dotenv()
-client = Anthropic()
 
 
 class CriticScore(BaseModel):
@@ -34,22 +37,14 @@ def generate(query: str, feedback: str | None = None) -> str:
     user_content = query
     if feedback:
         user_content += f"\n\n[IMPROVEMENT GUIDANCE]: {feedback}"
-    r = client.messages.create(
-        model="claude-opus-4-5", max_tokens=1024,
-        system=GENERATOR_SYSTEM,
-        messages=[{"role": "user", "content": user_content}],
-    )
-    return r.content[0].text
+    r = chat([{"role": "user", "content": user_content}], system=GENERATOR_SYSTEM, max_tokens=1024)
+    return get_text(r)
 
 
 def critique(query: str, response: str) -> CriticScore:
     prompt = f"Original request: {query}\n\nResponse to evaluate:\n{response}"
-    r = client.messages.create(
-        model="claude-opus-4-5", max_tokens=512,
-        system=CRITIC_SYSTEM,
-        messages=[{"role": "user", "content": prompt}],
-    )
-    raw = r.content[0].text
+    r = chat([{"role": "user", "content": prompt}], system=CRITIC_SYSTEM, max_tokens=512)
+    raw = get_text(r)
     start = raw.find("{")
     end = raw.rfind("}") + 1
     data = json.loads(raw[start:end])

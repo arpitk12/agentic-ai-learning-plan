@@ -4,6 +4,8 @@ Goal: Track token usage and cost per run. Stop if budget exceeded.
 
 pip install litellm python-dotenv structlog
 """
+import sys, os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../.."))
 import structlog
 from llm import chat, get_text, calc_cost, MODEL
 from dataclasses import dataclass, field

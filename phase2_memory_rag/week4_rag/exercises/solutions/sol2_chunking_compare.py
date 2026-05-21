@@ -1,18 +1,20 @@
 """
 SOLUTION — Exercise 2: Chunking Strategies + Hybrid Search
 """
+import os
+import sys
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../../.."))
+
 import re
 import numpy as np
 from sentence_transformers import SentenceTransformer
 from rank_bm25 import BM25Okapi
 import chromadb
-from anthropic import Anthropic
 from dotenv import load_dotenv
 
 load_dotenv()
 
 embedder = SentenceTransformer("all-MiniLM-L6-v2")
-client = Anthropic()
 
 SAMPLE_TEXT = """
 Artificial intelligence has transformed many industries. Machine learning, a subset of AI,

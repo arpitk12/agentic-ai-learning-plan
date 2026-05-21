@@ -1,17 +1,21 @@
 """
 SOLUTION — Exercise 1: FastAPI Agent with SSE Streaming
 """
+import os
+import sys
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../../.."))
+
 import json
 import math
 import asyncio
-from anthropic import AsyncAnthropic
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
+from litellm import acompletion
+from llm import MODEL, get_tool_calls, stop_reason, assistant_message, tool_result_message
 
 load_dotenv()
-client = AsyncAnthropic()
 app = FastAPI(title="Agent API")
 
 
@@ -57,41 +61,38 @@ async def agent_stream(query: str, max_steps: int = 5):
     try:
         while steps < max_steps:
             steps += 1
-            # Stream tokens
             full_text = ""
-            tool_uses = []
 
-            async with client.messages.stream(
-                model="claude-opus-4-5",
+            # Stream tokens via LiteLLM
+            stream = await acompletion(
+                model=MODEL,
+                messages=messages,
                 max_tokens=1024,
                 tools=TOOLS,
-                messages=messages,
-            ) as stream:
-                async for text in stream.text_stream:
-                    full_text += text
-                    yield _sse("token", text)
+                stream=True,
+            )
+            async for chunk in stream:
+                delta = chunk.choices[0].delta.content or ""
+                full_text += delta
+                if delta:
+                    yield _sse("token", delta)
 
-                final = await stream.get_final_message()
+            # Get final non-streamed response for tool calls
+            response = await acompletion(
+                model=MODEL, messages=messages, max_tokens=1024, tools=TOOLS
+            )
+            messages.append(assistant_message(response))
 
-            messages.append({"role": "assistant", "content": final.content})
-
-            if final.stop_reason == "end_turn":
+            if stop_reason(response) == "end_turn":
                 yield _sse("done", full_text)
                 return
 
-            if final.stop_reason == "tool_use":
-                tool_results = []
-                for block in final.content:
-                    if block.type == "tool_use":
-                        yield _sse("tool", f"{block.name}({json.dumps(block.input)})")
-                        result = await run_tool(block.name, block.input)
-                        yield _sse("result", result)
-                        tool_results.append({
-                            "type": "tool_result",
-                            "tool_use_id": block.id,
-                            "content": result,
-                        })
-                messages.append({"role": "user", "content": tool_results})
+            if stop_reason(response) == "tool_use":
+                for tc in get_tool_calls(response):
+                    yield _sse("tool", f"{tc['name']}({tc['arguments']})")
+                    result = await run_tool(tc["name"], tc["arguments"])
+                    yield _sse("result", result)
+                    messages.append(tool_result_message(tc["id"], result))
 
         yield _sse("error", "max_steps reached")
     except Exception as e:

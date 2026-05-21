@@ -16,7 +16,9 @@ Tools:
 """
 import random
 import json
-from llm import chat, get_text, get_tool_calls, stop_reason, MODEL
+import sys, os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../.."))
+from llm import chat, get_text, get_tool_calls, stop_reason, assistant_message, tool_result_message, MODEL,normalize_tools
 
 TOOLS = [
     {
@@ -70,7 +72,15 @@ TOOL_MAP = {"flaky_search": flaky_search, "flaky_database": flaky_database, "alw
 
 def safe_execute_tool(name: str, inputs: dict) -> str:
     """Execute a tool safely — never raise, always return a string result."""
-    raise NotImplementedError
+    fn = TOOL_MAP.get(name)
+    if fn is None:
+        return f"ERROR: Tool '{name}' not found"
+    try:
+        return fn(**inputs)
+    except Exception as e:
+        error_msg = f"ERROR [{type(e).__name__}]: {e}"
+        print(f"    ⚠ Tool '{name}' failed: {error_msg}")
+        return error_msg
 
 
 def run_robust_agent(user_message: str, max_steps: int = 10) -> str:
@@ -81,13 +91,26 @@ def run_robust_agent(user_message: str, max_steps: int = 10) -> str:
     while step < max_steps:
         step += 1
         # TODO: Implement the loop:
+        response=chat(messages=messages,tools=normalize_tools(TOOLS))
         #   1. Call LLM with TOOLS
+        reason=stop_reason(response)
         #   2. If stop_reason == "end_turn" → return final text
+        if reason=="end_turn":
+            return get_text(response)
         #   3. If stop_reason == "tool_use" → call safe_execute_tool for each
+
+        if reason=="tool_use":
+            tool_calls=get_tool_calls(response)
+            messages.append(assistant_message(response))
+            
+            for tool in tool_calls:
+                res=safe_execute_tool(tool["name"],tool["arguments"])
+    
+                messages.append(tool_result_message(tool["id"], res))
         #      tool_use block, collect results into tool_result messages
         #   4. Append assistant message + tool results to messages
         #   5. Continue loop
-        raise NotImplementedError
+        
 
     return "[Agent reached max_steps without a final answer]"
 

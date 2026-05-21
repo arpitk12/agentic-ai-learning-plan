@@ -1,12 +1,15 @@
 """
 SOLUTION — Exercise 3: Streaming with TTFT Measurement
 """
+import os
+import sys
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../../.."))
+
 import time
-from anthropic import Anthropic
 from dotenv import load_dotenv
+from llm import stream_chat, chat, get_text
 
 load_dotenv()
-client = Anthropic()
 
 
 def stream_response(prompt: str) -> str:
@@ -15,16 +18,11 @@ def stream_response(prompt: str) -> str:
     start = time.perf_counter()
     first_token_time: float | None = None
 
-    with client.messages.stream(
-        model="claude-opus-4-5",
-        max_tokens=1024,
-        messages=[{"role": "user", "content": prompt}],
-    ) as stream:
-        for text in stream.text_stream:
-            if first_token_time is None:
-                first_token_time = time.perf_counter() - start
-            print(text, end="", flush=True)
-            full_text += text
+    for chunk in stream_chat([{"role": "user", "content": prompt}]):
+        if first_token_time is None:
+            first_token_time = time.perf_counter() - start
+        print(chunk, end="", flush=True)
+        full_text += chunk
 
     elapsed = time.perf_counter() - start
     print(f"\n\n[TTFT: {first_token_time:.3f}s | Total: {elapsed:.2f}s | "
@@ -39,13 +37,9 @@ def compare_streaming_vs_blocking(prompt: str):
 
     print("\n=== BLOCKING (waits for full response) ===")
     start = time.perf_counter()
-    response = client.messages.create(
-        model="claude-opus-4-5",
-        max_tokens=1024,
-        messages=[{"role": "user", "content": prompt}],
-    )
+    response = chat([{"role": "user", "content": prompt}], max_tokens=1024)
     elapsed = time.perf_counter() - start
-    print(response.content[0].text)
+    print(get_text(response))
     print(f"\n[Total wait: {elapsed:.2f}s — user saw nothing until the end]")
 
 

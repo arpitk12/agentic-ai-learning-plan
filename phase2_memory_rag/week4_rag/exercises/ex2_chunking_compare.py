@@ -17,6 +17,8 @@ pip install chromadb sentence-transformers rank-bm25 anthropic
 """
 import re
 import numpy as np
+import sys, os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../.."))
 from sentence_transformers import SentenceTransformer
 from rank_bm25 import BM25Okapi
 import chromadb

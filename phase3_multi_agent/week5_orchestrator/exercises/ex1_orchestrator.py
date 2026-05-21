@@ -17,7 +17,9 @@ Tasks:
 Note: Use the raw Anthropic SDK (no frameworks) to understand the pattern.
 """
 import json
-from llm import chat, get_text, get_tool_calls, stop_reason, MODEL
+import sys, os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../.."))
+from llm import chat, get_text, get_tool_calls, stop_reason, assistant_message, tool_result_message, MODEL
 
 
 def planner_agent(task: str) -> list[str]:

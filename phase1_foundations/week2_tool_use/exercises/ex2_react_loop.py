@@ -2,38 +2,49 @@
 Exercise 2: ReAct Loop from Scratch
 Goal: Implement Reason → Act → Observe without any framework.
 """
+import sys, os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../.."))
 import json
 import math
 import datetime
-from llm import chat, get_text, get_tool_calls, stop_reason, MODEL
+from llm import chat, get_text, get_tool_calls, stop_reason, assistant_message, tool_result_message, MODEL
 
 # --- Tool definitions ---
 TOOLS = [
     {
-        "name": "calculator",
-        "description": "Evaluate a mathematical expression. Returns a float.",
-        "input_schema": {
-            "type": "object",
-            "properties": {
-                "expression": {"type": "string", "description": "e.g. '2 ** 10 + sqrt(16)'"}
-            },
-            "required": ["expression"]
+        "type": "function",
+        "function": {
+            "name": "calculator",
+            "description": "Evaluate a mathematical expression. Returns a float.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "expression": {"type": "string", "description": "e.g. '2 ** 10 + sqrt(16)'"}
+                },
+                "required": ["expression"]
+            }
         }
     },
     {
-        "name": "get_datetime",
-        "description": "Returns the current date and time as a string.",
-        "input_schema": {"type": "object", "properties": {}}
+        "type": "function",
+        "function": {
+            "name": "get_datetime",
+            "description": "Returns the current date and time as a string.",
+            "parameters": {"type": "object", "properties": {}, "required": []}
+        }
     },
     {
-        "name": "word_count",
-        "description": "Count words in a text string.",
-        "input_schema": {
-            "type": "object",
-            "properties": {
-                "text": {"type": "string"}
-            },
-            "required": ["text"]
+        "type": "function",
+        "function": {
+            "name": "word_count",
+            "description": "Count words in a text string.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "text": {"type": "string"}
+                },
+                "required": ["text"]
+            }
         }
     }
 ]
@@ -42,7 +53,6 @@ TOOLS = [
 def run_tool(name: str, inputs: dict) -> str:
     """Execute a tool and return result as string."""
     if name == "calculator":
-        # Safe eval with math functions available
         allowed = {k: getattr(math, k) for k in dir(math) if not k.startswith("_")}
         result = eval(inputs["expression"], {"__builtins__": {}}, allowed)
         return str(result)
@@ -55,22 +65,26 @@ def run_tool(name: str, inputs: dict) -> str:
 
 
 def react_agent(user_query: str, max_steps: int = 5) -> str:
-    """
-    TODO: Implement the full ReAct loop.
-    The agent must reason, call tools, observe results, and return a final answer.
-    Guard against infinite loops with max_steps.
-    """
     messages = [{"role": "user", "content": user_query}]
-    
+
     for step in range(max_steps):
         print(f"\n--- Step {step + 1} ---")
 
-        # TODO: Call the API
-        # TODO: Handle tool_use — execute each tool block, inject results
-        # TODO: Handle end_turn — return the final text
+        response = chat(messages=messages, tools=TOOLS)
+        reason = stop_reason(response)
+        print(f"Stop reason: {reason}")
 
-        pass
-    
+        if reason == "end_turn":
+            return get_text(response)
+
+        if reason == "tool_use":
+            tool_calls = get_tool_calls(response)
+            messages.append(assistant_message(response))
+            for tc in tool_calls:
+                result = run_tool(tc["name"], tc["arguments"])
+                print(f"  [Tool: {tc['name']}({tc['arguments']})] → {result}")
+                messages.append(tool_result_message(tc["id"], result))
+
     return "Max steps reached"
 
 

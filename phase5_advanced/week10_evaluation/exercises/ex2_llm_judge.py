@@ -7,6 +7,8 @@ pip install anthropic python-dotenv pydantic rich
 import json
 import csv
 from pathlib import Path
+import sys, os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../.."))
 from pydantic import BaseModel
 from llm import chat, get_text, MODEL
 

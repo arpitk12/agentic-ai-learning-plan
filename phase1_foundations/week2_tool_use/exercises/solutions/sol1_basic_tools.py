@@ -1,13 +1,15 @@
 """
 SOLUTION — Exercise 1: Basic Tool Use
 """
-import json
+import os
+import sys
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../../.."))
+
 import datetime
-from anthropic import Anthropic
 from dotenv import load_dotenv
+from llm import chat, get_text, get_tool_calls, stop_reason, assistant_message, tool_result_message
 
 load_dotenv()
-client = Anthropic()
 
 TOOLS = [
     {
@@ -106,41 +108,22 @@ def run_agent(user_message: str) -> str:
     messages = [{"role": "user", "content": user_message}]
 
     while True:
-        response = client.messages.create(
-            model="claude-opus-4-5",
-            max_tokens=1024,
-            tools=TOOLS,
-            messages=messages,
-        )
+        response = chat(messages, max_tokens=1024, tools=TOOLS)
 
-        # Append assistant's full message to history
-        messages.append({"role": "assistant", "content": response.content})
+        messages.append(assistant_message(response))
 
-        if response.stop_reason == "end_turn":
-            # Extract text from content list
-            for block in response.content:
-                if hasattr(block, "text"):
-                    return block.text
-            return ""
+        if stop_reason(response) == "end_turn":
+            return get_text(response)
 
-        if response.stop_reason == "tool_use":
-            tool_results = []
-            for block in response.content:
-                if block.type == "tool_use":
-                    fn = TOOL_MAP.get(block.name)
-                    if fn:
-                        result = fn(**block.input)
-                        print(f"  [Tool: {block.name}({block.input})] → {result}")
-                    else:
-                        result = f"Unknown tool: {block.name}"
-
-                    tool_results.append({
-                        "type": "tool_result",
-                        "tool_use_id": block.id,
-                        "content": result,
-                    })
-
-            messages.append({"role": "user", "content": tool_results})
+        if stop_reason(response) == "tool_use":
+            for tc in get_tool_calls(response):
+                fn = TOOL_MAP.get(tc["name"])
+                if fn:
+                    result = fn(**tc["arguments"])
+                    print(f"  [Tool: {tc['name']}({tc['arguments']})] → {result}")
+                else:
+                    result = f"Unknown tool: {tc['name']}"
+                messages.append(tool_result_message(tc["id"], result))
 
 
 if __name__ == "__main__":

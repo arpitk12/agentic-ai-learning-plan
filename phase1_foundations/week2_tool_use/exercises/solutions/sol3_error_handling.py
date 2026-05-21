@@ -1,13 +1,15 @@
 """
 SOLUTION — Exercise 3: Tool Error Handling
 """
+import os
+import sys
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../../.."))
+
 import random
-import json
-from anthropic import Anthropic
 from dotenv import load_dotenv
+from llm import chat, get_text, get_tool_calls, stop_reason, assistant_message, tool_result_message
 
 load_dotenv()
-client = Anthropic()
 
 TOOLS = [
     {
@@ -84,35 +86,20 @@ def run_robust_agent(user_message: str, max_steps: int = 10) -> str:
         step += 1
         print(f"\n=== Step {step} ===")
 
-        response = client.messages.create(
-            model="claude-opus-4-5",
-            max_tokens=1024,
-            tools=TOOLS,
-            messages=messages,
-        )
+        response = chat(messages, max_tokens=1024, tools=TOOLS)
 
-        messages.append({"role": "assistant", "content": response.content})
-        print(f"  stop_reason: {response.stop_reason}")
+        messages.append(assistant_message(response))
+        print(f"  stop_reason: {stop_reason(response)}")
 
-        if response.stop_reason == "end_turn":
-            for block in response.content:
-                if hasattr(block, "text"):
-                    return block.text
-            return ""
+        if stop_reason(response) == "end_turn":
+            return get_text(response)
 
-        if response.stop_reason == "tool_use":
-            tool_results = []
-            for block in response.content:
-                if block.type == "tool_use":
-                    print(f"  [CALL] {block.name}({json.dumps(block.input)})")
-                    result = safe_execute_tool(block.name, block.input)
-                    print(f"  [RESULT] → {result[:80]}")
-                    tool_results.append({
-                        "type": "tool_result",
-                        "tool_use_id": block.id,
-                        "content": result,
-                    })
-            messages.append({"role": "user", "content": tool_results})
+        if stop_reason(response) == "tool_use":
+            for tc in get_tool_calls(response):
+                print(f"  [CALL] {tc['name']}({tc['arguments']})")
+                result = safe_execute_tool(tc["name"], tc["arguments"])
+                print(f"  [RESULT] → {result[:80]}")
+                messages.append(tool_result_message(tc["id"], result))
 
     return "[Agent reached max_steps without a final answer]"
 

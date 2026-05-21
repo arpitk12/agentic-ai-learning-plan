@@ -1,20 +1,20 @@
 """
 SOLUTION — Exercise 1: Orchestrator + Specialist Agents
 """
+import os
+import sys
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../../.."))
+
 import json
-from anthropic import Anthropic
 from dotenv import load_dotenv
+from llm import chat, get_text
 
 load_dotenv()
-client = Anthropic()
 
 
 def _call(system: str, user: str, max_tokens: int = 1024) -> str:
-    r = client.messages.create(
-        model="claude-opus-4-5", max_tokens=max_tokens,
-        system=system, messages=[{"role": "user", "content": user}],
-    )
-    return r.content[0].text
+    r = chat([{"role": "user", "content": user}], system=system, max_tokens=max_tokens)
+    return get_text(r)
 
 
 def planner_agent(task: str) -> list[str]:
