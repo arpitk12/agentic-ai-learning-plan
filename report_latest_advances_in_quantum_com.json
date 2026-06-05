@@ -1,0 +1,14 @@
+{
+  "topic": "latest advances in quantum computing",
+  "summary": "Recent advancements in quantum computing have focused on improving qubit coherence times, scaling up the number of qubits, and developing error correction techniques. Companies like IBM, Google, and startups are pushing the boundaries by creating larger and more stable quantum systems.",
+  "key_points": [
+    "Improvement in qubit coherence",
+    "Increase in qubit count",
+    "Error correction advancements"
+  ],
+  "sources": [
+    "https://www.nature.com/news/quantum-computing-reaches-a-critical-point-1.23689",
+    "https://www.quantamagazine.org/quantum-computing-the-next-frontier-in-computer-science-20230725/",
+    "https://www.scientificamerican.com/article/how-much-qubit-coherence-do-we-really-need-for-useful-quantum-computers/"
+  ]
+}

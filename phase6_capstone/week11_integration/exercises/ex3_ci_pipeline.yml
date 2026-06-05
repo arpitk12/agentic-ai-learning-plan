@@ -1,0 +1,185 @@
+# Exercise 3: CI/CD Pipeline for Agentic AI
+# Goal: Run evaluation suite automatically on every pull request.
+#
+# This GitHub Actions workflow:
+#   1. Runs on every push and PR to main.
+#   2. Sets up Python and installs dependencies.
+#   3. Runs the golden-dataset baseline evaluation (ex1_golden_dataset.py).
+#   4. Runs the LLM judge evaluation suite (ex2_llm_judge.py).
+#   5. Runs the pytest regression suite (ex4_pytest_agent.py).
+#   6. Uploads evaluation results as build artifacts.
+#   7. Posts a summary comment on the PR.
+#
+# Tasks:
+#   1. Review the workflow structure.
+#   2. Add a step to cache pip packages for faster runs.
+#   3. Add a step that fails the build if any eval score drops below 0.70.
+#   4. Add a nightly schedule (cron) to run the full evaluation suite.
+#   5. (Bonus) Add matrix strategy to test against multiple LLM models.
+#
+# Setup:
+#   1. Copy this file to .github/workflows/eval.yml in your repo root.
+#   2. Add GEMINI_API_KEY (or your provider key) to GitHub repo secrets:
+#      Settings → Secrets and Variables → Actions → New repository secret
+#   3. Push to main — the workflow will trigger automatically.
+
+name: Agent Evaluation Suite
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  # TODO: Add schedule trigger for nightly runs at 02:00 UTC
+  # schedule:
+  #   - cron: '0 2 * * *'
+  workflow_dispatch:  # Allow manual trigger from GitHub UI
+
+env:
+  PYTHON_VERSION: "3.11"
+  # Model for CI — use a cheaper/faster model to save costs
+  MODEL: "gemini/gemini-2.0-flash"
+
+jobs:
+  # ── Job 1: Unit Tests ───────────────────────────────────────────────────────
+  unit-tests:
+    name: Unit Tests (no LLM)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      # TODO: Add pip cache step here
+      # - name: Cache pip
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: ~/.cache/pip
+      #     key: pip-${{ hashFiles('requirements.txt') }}
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio
+
+      - name: Run unit tests (non-LLM)
+        run: |
+          pytest -v -k "not llm_judged" --tb=short \
+            phase5_advanced/week10_evaluation/exercises/ex4_pytest_agent.py
+
+  # ── Job 2: Evaluation Suite ─────────────────────────────────────────────────
+  eval-suite:
+    name: LLM Evaluation Suite
+    runs-on: ubuntu-latest
+    # Only run evals on push to main (not every PR, to save API costs)
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    env:
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      # Fallback keys for other providers
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio
+
+      - name: Create .env file
+        run: |
+          echo "MODEL=${{ env.MODEL }}" > .env
+          echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> .env
+
+      - name: Run golden dataset baseline
+        id: golden
+        run: |
+          python phase5_advanced/week10_evaluation/exercises/ex1_golden_dataset.py \
+            2>&1 | tee eval_golden.txt
+          echo "exit_code=$?" >> $GITHUB_OUTPUT
+
+      - name: Run LLM judge evaluation
+        id: llm_judge
+        run: |
+          python phase5_advanced/week10_evaluation/exercises/ex2_llm_judge.py \
+            2>&1 | tee eval_judge.txt
+          echo "exit_code=$?" >> $GITHUB_OUTPUT
+
+      - name: Run pytest regression suite
+        id: pytest
+        run: |
+          pytest phase5_advanced/week10_evaluation/exercises/ex4_pytest_agent.py \
+            -v --tb=short --json-report --json-report-file=pytest_results.json \
+            2>&1 | tee eval_pytest.txt || true
+
+      # TODO: Add a step that reads eval scores from output and fails if < 0.70
+      # - name: Check eval thresholds
+      #   run: |
+      #     python -c "
+      #     import json, sys
+      #     results = json.load(open('eval_results.json'))
+      #     failed = [k for k, v in results.items() if v < 0.70]
+      #     if failed: sys.exit(f'Eval below threshold: {failed}')
+      #     "
+
+      - name: Upload evaluation artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-results-${{ github.sha }}
+          path: |
+            eval_golden.txt
+            eval_judge.txt
+            eval_pytest.txt
+            pytest_results.json
+          retention-days: 30
+
+      - name: Post PR comment with results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const golden = fs.existsSync('eval_golden.txt')
+              ? fs.readFileSync('eval_golden.txt', 'utf8').slice(-500)
+              : 'Not available';
+            const body = `## 🤖 Evaluation Results\n\n\`\`\`\n${golden}\n\`\`\`\n\n[Download full artifacts](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})`;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+
+  # ── (Bonus) Job 3: Multi-Model Matrix ──────────────────────────────────────
+  # TODO: Uncomment and configure to test across multiple LLM providers
+  # multi-model:
+  #   name: Multi-Model Eval (${{ matrix.model }})
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       model:
+  #         - "gemini/gemini-2.0-flash"
+  #         - "openai/gpt-4o-mini"
+  #   env:
+  #     MODEL: ${{ matrix.model }}
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: actions/setup-python@v5
+  #       with: { python-version: "3.11" }
+  #     - run: pip install -r requirements.txt
+  #     - run: python phase5_advanced/week10_evaluation/exercises/ex1_golden_dataset.py
+  #       env:
+  #         GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+  #         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}

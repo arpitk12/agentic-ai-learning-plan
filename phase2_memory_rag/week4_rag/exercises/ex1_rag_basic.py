@@ -24,27 +24,42 @@ def chunk_text(pages: list[str], chunk_size: int = 500, overlap: int = 50) -> li
     """TODO: Split pages into overlapping chunks of ~chunk_size characters."""
     chunks = []
     for page in pages:
-        # TODO: implement sliding window chunking
-        pass
-    return chunks
+        start=0
+        while start<len(page):
+            end=start+chunk_size
+            chunks.append(page[start,end].strip())
+            start=end-overlap
+        
+    return [c for c in chunks if len(c)>20]
 
 
 def build_index(chunks: list[str], collection_name: str = "docs") -> chromadb.Collection:
     """TODO: Embed chunks and upsert them into a Chroma collection."""
     collection = chroma.get_or_create_collection(collection_name)
-    # TODO: embed and store
+    embeddings=embedder.encode(chunks).tolist()
+    collection.add(embeddings=embeddings,documents=chunks,ids=[f"chunk_{i}" for i in range(len(chunks))])
     return collection
 
 
 def retrieve(query: str, collection: chromadb.Collection, top_k: int = 3) -> list[str]:
     """TODO: Embed the query and return the top_k most similar chunks."""
-    return []
+    query_embedding=embedder.encode(query).tolist()
+    context=collection.query(query_embeddings=[query_embedding],n_results=top_k)
+    return context["documents"][0]
 
 
 def answer(question: str, context_chunks: list[str]) -> str:
     """TODO: Build a context-augmented prompt and call the LLM."""
     context = "\n\n---\n\n".join(context_chunks)
-    return "Not implemented"
+    r = chat(
+        [{"role": "user", "content": f"Context:\n{context}\n\nQuestion: {question}"}],
+        system=(
+            "You are a helpful assistant. Answer the question using ONLY the provided context. "
+            "If the answer is not in the context, say 'I don't know based on the provided documents.'"
+        ),
+        max_tokens=1024,
+    )
+    return get_text(r)
 
 
 def rag_pipeline(pdf_path: str, question: str) -> str:
