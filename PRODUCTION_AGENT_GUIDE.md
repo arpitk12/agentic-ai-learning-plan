@@ -4007,6 +4007,7 @@ exercise is teaching.
 | `project12_customer_support/` ⭐ | Multi-tier intent triage → specialist sub-agents → CRM tool use → escalation → SLA tracking → PII guard → session report | §2, §6, §7 |
 | `project13_data_analyst/` ⭐ | NL question → plan decomposition → LLM code generation → safe subprocess execution → self-correction (max 3×) → narrative Markdown report | §4.6, §5 |
 | `project14_doc_intelligence/` ⭐ | Batch classify → LLM+Pydantic extraction → two-pass validation → SHA-256 dedup → anomaly detection → JSON+HTML report | §2.1, §6, §7 |
+| `project15_whatsapp_agent/` ⭐ | **MCP server** (FastMCP + TF-IDF RAG) + **multi-agent routing** (intent → 4 specialists via MCP tools) + **WhatsApp** (Twilio TwiML) + **Telegram** Bot API + per-user session history | §2, §3, §4, §7 |
 
 ---
 
@@ -4066,6 +4067,7 @@ exercise is teaching.
 | **Multi-tier customer support agent (triage → CRM tools → SLA)** | `project12_customer_support/` ⭐ |
 | **Data analyst agent (code gen → subprocess exec → self-correct)** | `project13_data_analyst/` ⭐ |
 | **Document intelligence pipeline (classify → extract → dedup → report)** | `project14_doc_intelligence/` ⭐ |
+| **WhatsApp/Telegram agent with MCP server + RAG** | `project15_whatsapp_agent/` ⭐ |
 | **Agent evaluation concepts, failure modes, quality dimensions** | [§12 Agent Evaluation](#12-agent-evaluation--quality-assurance) ⭐ |
 | **Golden dataset eval + LLM-as-judge** | `week10/ex2`, `week10/ex3`, [§12.3](#123-evaluation-methods) ⭐ |
 | **CI/CD quality gate pipeline** | [§12.8](#128-wiring-evaluation-into-cicd) ⭐ |

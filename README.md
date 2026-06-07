@@ -38,7 +38,7 @@ agentic_ai_learning_plan/
 | 4 — Production | 7–8 | FastAPI SSE, cost tracking, guardrails | Agent-as-a-Service API |
 | 5 — Advanced | 9–10 | Self-reflection, Reflexion, RAGAS, DeepEval, LangSmith, safety & perf eval | Self-Improving Coding Agent |
 | 6 — Capstone | 11–12 | MCP, model routing, Docker deploy | Full-Stack Content Pipeline |
-| **Bonus** | — | Security, observability, batch pipelines, LangGraph HITL, eval pipeline, **customer support agent, data analyst agent, document intelligence pipeline** | Projects 7–14 |
+| **Bonus** | — | Security, observability, batch pipelines, LangGraph HITL, eval pipeline, customer support, data analyst, document intelligence, **WhatsApp MCP agent** | Projects 7–15 |
 
 ---
 
@@ -77,7 +77,8 @@ projects/
 │                                 · latency benchmark · multi-turn · JSON + HTML report · CI gate
 ├── project12_customer_support/   Multi-tier triage → CRM tool use → specialist agents → escalation → SLA · session report
 ├── project13_data_analyst/       NL question → plan → LLM code gen → subprocess exec → self-correct (3×) → narrative report
-└── project14_doc_intelligence/   Batch classify → LLM+Pydantic extract → validate → SHA-256 dedup → anomaly detect → HTML report
+├── project14_doc_intelligence/   Batch classify → LLM+Pydantic extract → validate → SHA-256 dedup → anomaly detect → HTML report
+└── project15_whatsapp_agent/     MCP server (FastMCP + RAG) + multi-agent routing + WhatsApp (Twilio) + Telegram + session history
 ```
 
 Each project has:
@@ -141,6 +142,11 @@ pip install ragas datasets          # RAGAS: RAG quality metrics
 pip install deepeval                # DeepEval: 14+ LLM metrics + pytest integration
 pip install langsmith               # LangSmith: datasets, evaluators, experiment versioning
 pip install pytest pytest-asyncio   # behavioural testing
+
+# Project 15 (WhatsApp agent — MCP + RAG + messaging)
+pip install mcp fastapi uvicorn httpx   # MCP SDK + API server
+# Optional: real WhatsApp integration
+pip install twilio
 
 # Week 3 LangGraph exercises specifically
 pip install langchain-community  # provides ChatLiteLLM
