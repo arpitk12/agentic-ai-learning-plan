@@ -3991,6 +3991,10 @@ exercise is teaching.
 | `phase4_agent_api/` | FastAPI + Celery + observability | §2.9, §2.10, §9 |
 | `phase5_coding_agent/` | Planning + Reflexion + tools | §4.5, §4.6, §1 |
 | `phase6_capstone/` | Full production stack | All sections |
+| `project7_security_agent/` ⭐ | Prompt injection + PII detection + HITL for risky tools | §8, §6.1, §6.2 |
+| `project8_observability_agent/` ⭐ | structlog + Prometheus metrics + OTel traces + cost tracking | §9, §2.17, §2.18 |
+| `project9_batch_pipeline/` ⭐ | Fan-Out/Fan-In + Map-Reduce for 500+ items | §4.4, §4.5 |
+| `project10_langgraph_agent/` ⭐ | LangGraph StateGraph + HITL approval + MemorySaver checkpointing | §2.4, §4.7 |
 
 ---
 
@@ -4035,6 +4039,17 @@ exercise is teaching.
 | Prometheus metrics + alerting | `week12/ex3` |
 | Locust load testing | `week12/ex4` |
 | Kubernetes deployment | `week12/ex5` ⭐ |
+| **Production Security** (5 layers: injection, PII, tool validation, HITL, output scan) | `project7_security_agent/` ⭐ |
+| **Full Observability** (structlog + Prometheus + OTel + cost per run) | `project8_observability_agent/` ⭐ |
+| **Batch Fan-Out + Map-Reduce** (500+ items, Semaphore, hierarchical reduce) | `project9_batch_pipeline/` ⭐ |
+| **LangGraph HITL + Checkpointing** (StateGraph, conditional routing, MemorySaver) | `project10_langgraph_agent/` ⭐ |
+
+> ⭐ = newly added (not in original repo)
+
+---
+
+*Last updated: June 2026. Built with LiteLLM + `llm.py` on `gemini/gemini-2.0-flash`.*
+
 
 > ⭐ = newly added exercise (not in original repo)
 
