@@ -3953,10 +3953,14 @@ exercise is teaching.
 
 | Exercise | Guide Sections | What You Practice |
 |----------|---------------|-------------------|
-| `ex1_golden_dataset.py` | §3.8 (RAG Evaluation) | Build ground-truth Q&A dataset, baseline measurement |
-| `ex2_llm_judge.py` | §3.8 (RAG Evaluation) | LLM-as-judge prompt design, rubric scoring, calibration |
-| `ex3_ragas_eval.py` | §3.8 (RAG Evaluation) | RAGAS faithfulness, answer_relevancy, context_precision metrics |
-| `ex4_pytest_agent.py` | §6 (Production Checklist) | pytest fixtures, mock LLM responses, deterministic agent tests |
+| `ex1_golden_dataset.py` | §3.8, §12.3.1 | Build ground-truth Q&A dataset, baseline measurement |
+| `ex2_llm_judge.py` | §12.3.2 | LLM-as-judge prompt design, rubric scoring, calibration |
+| `ex3_ragas_eval.py` | §12.3.3 | RAGAS faithfulness, answer_relevancy, context_precision metrics |
+| `ex4_pytest_agent.py` | §12.4 | pytest fixtures, mock LLM responses, deterministic agent tests |
+| `ex5_safety_adversarial.py` ⭐ | §12.2.5, §8 | Harmful refusal rate, injection blocking, PII leak, over-refusal |
+| `ex6_tool_quality_eval.py` ⭐ | §12.2.3 | Tool selection accuracy, Pydantic arg validation, unnecessary call rate |
+| `ex7_performance_benchmark.py` ⭐ | §12.2.6 | Latency P50/P95/P99, cost/run, token budget compliance |
+| `ex8_conversation_eval.py` ⭐ | §12.6 Challenge 4 | Multi-turn continuity, coreference, contradiction detection |
 
 ---
 
@@ -3996,6 +4000,7 @@ exercise is teaching.
 | `project8_observability_agent/` ⭐ | structlog + Prometheus metrics + OTel traces + cost tracking | §9, §2.17, §2.18 |
 | `project9_batch_pipeline/` ⭐ | Fan-Out/Fan-In + Map-Reduce for 500+ items | §4.4, §4.5 |
 | `project10_langgraph_agent/` ⭐ | LangGraph StateGraph + HITL approval + MemorySaver checkpointing | §2.4, §4.7 |
+| `project11_eval_pipeline/` ⭐ | End-to-end eval: golden dataset + safety suite + tool quality + RAG faithfulness + perf benchmark + multi-turn + HTML report + CI gate | §12 |
 
 ---
 
@@ -4044,6 +4049,11 @@ exercise is teaching.
 | **Full Observability** (structlog + Prometheus + OTel + cost per run) | `project8_observability_agent/` ⭐ |
 | **Batch Fan-Out + Map-Reduce** (500+ items, Semaphore, hierarchical reduce) | `project9_batch_pipeline/` ⭐ |
 | **LangGraph HITL + Checkpointing** (StateGraph, conditional routing, MemorySaver) | `project10_langgraph_agent/` ⭐ |
+| **Safety adversarial testing** (harmful, injection, PII-leak, over-refusal) | `week10/ex5` ⭐ |
+| **Tool selection accuracy + arg validity eval** | `week10/ex6` ⭐ |
+| **Latency P50/P95/P99 + cost/run benchmarking** | `week10/ex7` ⭐ |
+| **Multi-turn conversation eval** (context continuity, contradiction detection) | `week10/ex8` ⭐ |
+| **End-to-end eval pipeline + HTML report + CI gate** | `project11_eval_pipeline/` ⭐ |
 | **Agent evaluation concepts, failure modes, quality dimensions** | [§12 Agent Evaluation](#12-agent-evaluation--quality-assurance) ⭐ |
 | **Golden dataset eval + LLM-as-judge** | `week10/ex2`, `week10/ex3`, [§12.3](#123-evaluation-methods) ⭐ |
 | **CI/CD quality gate pipeline** | [§12.8](#128-wiring-evaluation-into-cicd) ⭐ |
