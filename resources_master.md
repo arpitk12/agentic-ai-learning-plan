@@ -17,12 +17,17 @@
 - Tree of Thought (2023): https://arxiv.org/abs/2305.10601
 - AutoGen (2023): https://arxiv.org/abs/2308.00352
 - LATS (2023): https://arxiv.org/abs/2310.04406
+- RAGAS (2023): https://arxiv.org/abs/2309.15217
+- LLM-as-a-Judge / MT-Bench (2023): https://arxiv.org/abs/2306.05685
+- AgentBench (2023): https://arxiv.org/abs/2308.03688
+- Can LLMs Replace Human Evaluators? (2024): https://arxiv.org/abs/2404.03622
 - Anthropic's "Building Effective Agents": https://www.anthropic.com/research/building-effective-agents
 
 ## 🛠 Key Libraries
 | Library | Use |
 |---|---|
 | anthropic | Anthropic SDK |
+| litellm | Unified LLM API (OpenAI, Anthropic, Gemini, …) |
 | langchain / langgraph | Agent framework |
 | chromadb / qdrant | Vector database |
 | sentence-transformers | Local embeddings |
@@ -30,8 +35,11 @@
 | celery + redis | Background jobs |
 | structlog | Structured logging |
 | opentelemetry | Distributed tracing |
-| ragas | RAG evaluation |
-| deepeval | LLM evaluation |
+| ragas | RAG evaluation (faithfulness, relevancy, precision, recall) |
+| datasets | HuggingFace datasets — eval data management |
+| deepeval | LLM evaluation with 14+ typed metrics and pytest integration |
+| langsmith | LangSmith tracing **and** evaluation datasets + experiments |
+| arize-phoenix | Open-source LLM observability + eval dashboard |
 | pydantic | Data validation |
 | httpx | Async HTTP |
 | tavily-python | Web search tool |
@@ -50,10 +58,11 @@
 - Matt Wolfe
 
 ## 🔧 Tools & Platforms
-- LangSmith (tracing): https://smith.langchain.com/
+- LangSmith (tracing + eval datasets): https://smith.langchain.com/
 - Weights & Biases (experiment tracking): https://wandb.ai/
 - Helicone (LLM observability): https://www.helicone.ai/
-- BrainTrust (evals): https://www.braintrustdata.com/
+- Phoenix / Arize (open-source LLM eval dashboard): https://phoenix.arize.com/
+- BrainTrust (evals + tracing): https://www.braintrustdata.com/
 - Tavily (web search API): https://tavily.com/
 - Modal (serverless GPU/CPU): https://modal.com/
 - Railway (deploy): https://railway.app/
@@ -65,6 +74,8 @@
 
 ## 📊 Benchmarks (know what your agent is measured against)
 - SWE-bench (software engineering): https://www.swebench.com/
-- HumanEval (code generation)
-- GAIA (general AI assistants)
-- AgentBench (agent evaluation)
+- HumanEval (code generation): https://github.com/openai/human-eval
+- GAIA (general AI assistants): https://huggingface.co/datasets/gaia-benchmark/GAIA
+- AgentBench (agent evaluation): https://arxiv.org/abs/2308.03688
+- BigCodeBench (realistic code tasks): https://bigcode-bench.github.io/
+- TruthfulQA (hallucination detection): https://github.com/sylinrl/TruthfulQA

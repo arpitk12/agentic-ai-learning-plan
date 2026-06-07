@@ -36,8 +36,9 @@ agentic_ai_learning_plan/
 | 2 — Memory & RAG | 3–4 | LangGraph, ChromaDB, hybrid search | Personal Knowledge Agent |
 | 3 — Multi-Agent | 5–6 | Orchestrator pattern, asyncio fan-out | Parallel Code Reviewer |
 | 4 — Production | 7–8 | FastAPI SSE, cost tracking, guardrails | Agent-as-a-Service API |
-| 5 — Advanced | 9–10 | Self-reflection, Reflexion, LLM-as-judge | Self-Improving Coding Agent |
+| 5 — Advanced | 9–10 | Self-reflection, Reflexion, RAGAS, DeepEval, LangSmith, safety & perf eval | Self-Improving Coding Agent |
 | 6 — Capstone | 11–12 | MCP, model routing, Docker deploy | Full-Stack Content Pipeline |
+| **Bonus** | — | Security, observability, batch pipelines, LangGraph HITL, **full eval pipeline** | Projects 7–11 |
 
 ---
 
@@ -67,12 +68,18 @@ projects/
 ├── phase3_code_review/           4 async agents → scored PR review report
 ├── phase4_agent_api/             FastAPI + SSE + cost tracking → production API
 ├── phase5_coding_agent/          Reflexion loop → solves failing pytest suites
-└── phase6_capstone/              Async multi-agent content pipeline (full-stack)
+├── phase6_capstone/              Async multi-agent content pipeline (full-stack)
+├── project7_security_agent/      5-layer security: injection · PII scan · Pydantic validation · HITL · output scan
+├── project8_observability_agent/ structlog + Prometheus + OpenTelemetry + cost-per-run dashboard
+├── project9_batch_pipeline/      Fan-Out / Fan-In + Map-Reduce for 500+ items with asyncio.Semaphore
+├── project10_langgraph_agent/    LangGraph StateGraph · conditional routing · MemorySaver checkpointing · HITL
+└── project11_eval_pipeline/      End-to-end eval: golden dataset · safety suite · tool quality · RAG faithfulness
+                                  · latency benchmark · multi-turn · JSON + HTML report · CI gate
 ```
 
 Each project has:
-- `README.md` — requirements, architecture, setup, eval criteria
-- `starter.py` — scaffold with TODOs (where provided)
+- `README.md` — requirements, architecture, milestones, expected output
+- `starter.py` — scaffold with TODO sections (6–8 per project)
 - `solution/solution.py` — full working implementation
 
 ---
@@ -123,11 +130,14 @@ pip install chromadb sentence-transformers rank-bm25 pypdf
 # Phase 3 (web search)
 pip install tavily-python
 
-# Phase 4 (API serving)
-pip install fastapi uvicorn structlog
+# Phase 4 (API serving + observability)
+pip install fastapi uvicorn structlog prometheus-client opentelemetry-sdk opentelemetry-exporter-otlp
 
-# Phase 5 (evaluation)
-pip install pytest deepeval
+# Phase 5 (evaluation frameworks)
+pip install ragas datasets          # RAGAS: RAG quality metrics
+pip install deepeval                # DeepEval: 14+ LLM metrics + pytest integration
+pip install langsmith               # LangSmith: datasets, evaluators, experiment versioning
+pip install pytest pytest-asyncio   # behavioural testing
 
 # Week 3 LangGraph exercises specifically
 pip install langchain-community  # provides ChatLiteLLM
@@ -154,9 +164,12 @@ pip install langchain-community  # provides ChatLiteLLM
 | No `max_steps` guard in tool loops | Always add one — agents can loop forever |
 | Logging raw user input | Redact PII before any log write |
 | Always using the biggest model | Route by complexity — save 80%+ on cost |
-| No eval suite | LLM-as-judge on 20 golden cases catches regressions |
+| No eval suite | LLM-as-judge + golden dataset catches regressions before deployment |
 | Interpolating user input into system prompts | Wrap in `<user_input>` tags, instruct model to ignore instructions inside |
 | Not handling parallel tool calls | Loop over ALL content blocks, not just the first |
+| Evaluating only on happy-path cases | Include adversarial, edge-case, and safety test cases |
+| Using exact-match eval for open-ended tasks | Use LLM-as-judge or DeepEval metrics instead |
+| Skipping multi-turn evaluation | Test full conversation sessions, not just individual turns |
 
 ---
 
