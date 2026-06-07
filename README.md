@@ -38,7 +38,7 @@ agentic_ai_learning_plan/
 | 4 — Production | 7–8 | FastAPI SSE, cost tracking, guardrails | Agent-as-a-Service API |
 | 5 — Advanced | 9–10 | Self-reflection, Reflexion, RAGAS, DeepEval, LangSmith, safety & perf eval | Self-Improving Coding Agent |
 | 6 — Capstone | 11–12 | MCP, model routing, Docker deploy | Full-Stack Content Pipeline |
-| **Bonus** | — | Security, observability, batch pipelines, LangGraph HITL, eval pipeline, customer support, data analyst, document intelligence, **WhatsApp MCP agent** | Projects 7–15 |
+| **Bonus** | — | Security, observability, batch pipelines, LangGraph HITL, eval pipeline, customer support, data analyst, document intelligence, WhatsApp MCP agent, **production RAG** | Projects 7–16 |
 
 ---
 
@@ -78,7 +78,10 @@ projects/
 ├── project12_customer_support/   Multi-tier triage → CRM tool use → specialist agents → escalation → SLA · session report
 ├── project13_data_analyst/       NL question → plan → LLM code gen → subprocess exec → self-correct (3×) → narrative report
 ├── project14_doc_intelligence/   Batch classify → LLM+Pydantic extract → validate → SHA-256 dedup → anomaly detect → HTML report
-└── project15_whatsapp_agent/     MCP server (FastMCP + RAG) + multi-agent routing + WhatsApp (Twilio) + Telegram + session history
+├── project15_whatsapp_agent/     MCP server (FastMCP + RAG) + multi-agent routing + WhatsApp (Twilio) + Telegram + session history
+└── project16_production_rag/     Production RAG: offline embed pipeline · ChromaDB · BM25+vector hybrid · LLM rerank
+                                  · multi-agent orchestrator · FastAPI (lifespan, middleware, rate limit) · MCP server
+                                  · LLM-judge eval gate · Docker + CI/CD (GitHub Actions)
 ```
 
 Each project has:

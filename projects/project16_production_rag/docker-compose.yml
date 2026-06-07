@@ -1,0 +1,43 @@
+services:
+  # ─── ChromaDB — persistent vector store ───────────────────────────────────
+  chromadb:
+    image: chromadb/chroma:latest
+    ports:
+      - "8001:8000"
+    volumes:
+      - chroma_data:/chroma/chroma
+    environment:
+      ANONYMIZED_TELEMETRY: "false"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/heartbeat"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── RAG API server ───────────────────────────────────────────────────────
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data/sample_docs:/app/data/sample_docs:ro   # read-only at serve time
+      - ./data/chroma_db:/app/data/chroma_db           # shared with ingestion
+    environment:
+      MODEL: ${MODEL:-gemini/gemini-2.0-flash}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      CHROMA_HOST: chromadb
+      CHROMA_PORT: 8001
+      COLLECTION_NAME: prod_rag
+      LOG_LEVEL: INFO
+    depends_on:
+      chromadb:
+        condition: service_healthy
+    command: uvicorn src.api.app:app --host 0.0.0.0 --port 8000 --workers 2
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  chroma_data:

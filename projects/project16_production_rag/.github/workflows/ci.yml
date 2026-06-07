@@ -1,0 +1,64 @@
+name: CI — Production RAG Agent
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'projects/project16_production_rag/**'
+  pull_request:
+    paths:
+      - 'projects/project16_production_rag/**'
+
+defaults:
+  run:
+    working-directory: projects/project16_production_rag
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - run: pip install ruff
+      - run: ruff check src/ scripts/ tests/ --ignore E501
+
+  test:
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - run: pip install -r requirements.txt
+      - name: Run ingestion pipeline on sample docs
+        run: python scripts/ingest.py --source data/sample_docs
+      - name: Run unit tests
+        run: pytest tests/ -v --tb=short
+        env:
+          MODEL: ${{ secrets.MODEL || 'gemini/gemini-2.0-flash' }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+
+  eval-gate:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - run: pip install -r requirements.txt
+      - name: Ingest sample docs
+        run: python scripts/ingest.py --source data/sample_docs
+      - name: Run evaluation quality gate
+        run: python scripts/evaluate.py --fail-below 0.75
+        env:
+          MODEL: ${{ secrets.MODEL || 'gemini/gemini-2.0-flash' }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+
+  docker-build:
+    runs-on: ubuntu-latest
+    needs: eval-gate
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Docker image
+        run: docker build -t prod-rag-agent:${{ github.sha }} .

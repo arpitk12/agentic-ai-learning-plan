@@ -64,6 +64,7 @@ A comprehensive reference for building, deploying, and operating production-grad
 | [project13 — Data Analyst](projects/project13_data_analyst_agent/) | Code gen → subprocess → self-correct |
 | [project14 — Doc Intelligence](projects/project14_document_intelligence_agent/) | Classify → extract → dedup → report |
 | [project15 — WhatsApp Agent](projects/project15_whatsapp_agent/) | MCP + RAG + WhatsApp/Telegram |
+| [project16 — Production RAG](projects/project16_production_rag/) | Modular RAG · hybrid search · Docker · CI/CD · LLM-judge eval gate |
 
 ---
 
