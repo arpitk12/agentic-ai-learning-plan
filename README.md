@@ -38,7 +38,7 @@ agentic_ai_learning_plan/
 | 4 — Production | 7–8 | FastAPI SSE, cost tracking, guardrails | Agent-as-a-Service API |
 | 5 — Advanced | 9–10 | Self-reflection, Reflexion, RAGAS, DeepEval, LangSmith, safety & perf eval | Self-Improving Coding Agent |
 | 6 — Capstone | 11–12 | MCP, model routing, Docker deploy | Full-Stack Content Pipeline |
-| **Bonus** | — | Security, observability, batch pipelines, LangGraph HITL, **full eval pipeline** | Projects 7–11 |
+| **Bonus** | — | Security, observability, batch pipelines, LangGraph HITL, eval pipeline, **customer support agent, data analyst agent, document intelligence pipeline** | Projects 7–14 |
 
 ---
 
@@ -73,8 +73,11 @@ projects/
 ├── project8_observability_agent/ structlog + Prometheus + OpenTelemetry + cost-per-run dashboard
 ├── project9_batch_pipeline/      Fan-Out / Fan-In + Map-Reduce for 500+ items with asyncio.Semaphore
 ├── project10_langgraph_agent/    LangGraph StateGraph · conditional routing · MemorySaver checkpointing · HITL
-└── project11_eval_pipeline/      End-to-end eval: golden dataset · safety suite · tool quality · RAG faithfulness
-                                  · latency benchmark · multi-turn · JSON + HTML report · CI gate
+├── project11_eval_pipeline/      End-to-end eval: golden dataset · safety suite · tool quality · RAG faithfulness
+│                                 · latency benchmark · multi-turn · JSON + HTML report · CI gate
+├── project12_customer_support/   Multi-tier triage → CRM tool use → specialist agents → escalation → SLA · session report
+├── project13_data_analyst/       NL question → plan → LLM code gen → subprocess exec → self-correct (3×) → narrative report
+└── project14_doc_intelligence/   Batch classify → LLM+Pydantic extract → validate → SHA-256 dedup → anomaly detect → HTML report
 ```
 
 Each project has:

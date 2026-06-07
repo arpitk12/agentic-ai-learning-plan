@@ -4004,6 +4004,9 @@ exercise is teaching.
 | `project9_batch_pipeline/` ⭐ | Fan-Out/Fan-In + Map-Reduce for 500+ items | §4.4, §4.5 |
 | `project10_langgraph_agent/` ⭐ | LangGraph StateGraph + HITL approval + MemorySaver checkpointing | §2.4, §4.7 |
 | `project11_eval_pipeline/` ⭐ | End-to-end eval: golden dataset + safety suite + tool quality + RAG faithfulness + perf benchmark + multi-turn + HTML report + CI gate | §12 |
+| `project12_customer_support/` ⭐ | Multi-tier intent triage → specialist sub-agents → CRM tool use → escalation → SLA tracking → PII guard → session report | §2, §6, §7 |
+| `project13_data_analyst/` ⭐ | NL question → plan decomposition → LLM code generation → safe subprocess execution → self-correction (max 3×) → narrative Markdown report | §4.6, §5 |
+| `project14_doc_intelligence/` ⭐ | Batch classify → LLM+Pydantic extraction → two-pass validation → SHA-256 dedup → anomaly detection → JSON+HTML report | §2.1, §6, §7 |
 
 ---
 
@@ -4060,6 +4063,9 @@ exercise is teaching.
 | **DeepEval** (LLMTestCase, 4 metrics, custom BaseMetric, pytest integration) | `week10/ex10` ⭐ |
 | **LangSmith evaluation** (datasets, custom evaluators, version comparison) | `week10/ex11` ⭐ |
 | **End-to-end eval pipeline + HTML report + CI gate** | `project11_eval_pipeline/` ⭐ |
+| **Multi-tier customer support agent (triage → CRM tools → SLA)** | `project12_customer_support/` ⭐ |
+| **Data analyst agent (code gen → subprocess exec → self-correct)** | `project13_data_analyst/` ⭐ |
+| **Document intelligence pipeline (classify → extract → dedup → report)** | `project14_doc_intelligence/` ⭐ |
 | **Agent evaluation concepts, failure modes, quality dimensions** | [§12 Agent Evaluation](#12-agent-evaluation--quality-assurance) ⭐ |
 | **Golden dataset eval + LLM-as-judge** | `week10/ex2`, `week10/ex3`, [§12.3](#123-evaluation-methods) ⭐ |
 | **CI/CD quality gate pipeline** | [§12.8](#128-wiring-evaluation-into-cicd) ⭐ |
