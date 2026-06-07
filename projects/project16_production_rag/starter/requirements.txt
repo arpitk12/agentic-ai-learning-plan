@@ -1,0 +1,34 @@
+# Core (shared with rest of repo)
+litellm>=1.35.0
+python-dotenv>=1.0.0
+pydantic>=2.0.0
+
+# API serving
+fastapi>=0.111.0
+uvicorn[standard]>=0.29.0
+httpx>=0.27.0
+python-multipart>=0.0.9
+
+# Vector store
+chromadb>=0.5.0
+
+# Embeddings (local — no API cost)
+sentence-transformers>=3.0.0
+
+# BM25 for hybrid search
+rank-bm25>=0.2.2
+
+# Logging + observability
+structlog>=24.0.0
+prometheus-client>=0.20.0
+
+# MCP server
+mcp>=1.0.0
+
+# Evaluation
+datasets>=2.19.0
+
+# Testing
+pytest>=8.0.0
+pytest-asyncio>=0.23.0
+httpx>=0.27.0   # for TestClient
