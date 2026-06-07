@@ -3955,12 +3955,15 @@ exercise is teaching.
 |----------|---------------|-------------------|
 | `ex1_golden_dataset.py` | §3.8, §12.3.1 | Build ground-truth Q&A dataset, baseline measurement |
 | `ex2_llm_judge.py` | §12.3.2 | LLM-as-judge prompt design, rubric scoring, calibration |
-| `ex3_ragas_eval.py` | §12.3.3 | RAGAS faithfulness, answer_relevancy, context_precision metrics |
+| `ex3_ragas_eval.py` | §12.3.3 | RAGAS 4 core metrics: faithfulness, answer_relevancy, context_precision, context_recall |
 | `ex4_pytest_agent.py` | §12.4 | pytest fixtures, mock LLM responses, deterministic agent tests |
 | `ex5_safety_adversarial.py` ⭐ | §12.2.5, §8 | Harmful refusal rate, injection blocking, PII leak, over-refusal |
 | `ex6_tool_quality_eval.py` ⭐ | §12.2.3 | Tool selection accuracy, Pydantic arg validation, unnecessary call rate |
 | `ex7_performance_benchmark.py` ⭐ | §12.2.6 | Latency P50/P95/P99, cost/run, token budget compliance |
 | `ex8_conversation_eval.py` ⭐ | §12.6 Challenge 4 | Multi-turn continuity, coreference, contradiction detection |
+| `ex9_ragas_advanced.py` ⭐ | §12.3.3, §3.8 | Custom LLM wrapper for RAGAS, chunk-size comparison (128/256/512), per-metric recommendations |
+| `ex10_deepeval.py` ⭐ | §12.3, §12.9 | DeepEval LLMTestCase, AnswerRelevancy/Faithfulness/Hallucination/Bias, custom BaseMetric, pytest |
+| `ex11_langsmith_eval.py` ⭐ | §2.7, §12.3 | LangSmith datasets, custom evaluator functions, evaluate(), agent v1 vs v2 comparison |
 
 ---
 
@@ -4053,6 +4056,9 @@ exercise is teaching.
 | **Tool selection accuracy + arg validity eval** | `week10/ex6` ⭐ |
 | **Latency P50/P95/P99 + cost/run benchmarking** | `week10/ex7` ⭐ |
 | **Multi-turn conversation eval** (context continuity, contradiction detection) | `week10/ex8` ⭐ |
+| **RAGAS advanced** (custom LLM config, chunk-size comparison, recommendations) | `week10/ex9` ⭐ |
+| **DeepEval** (LLMTestCase, 4 metrics, custom BaseMetric, pytest integration) | `week10/ex10` ⭐ |
+| **LangSmith evaluation** (datasets, custom evaluators, version comparison) | `week10/ex11` ⭐ |
 | **End-to-end eval pipeline + HTML report + CI gate** | `project11_eval_pipeline/` ⭐ |
 | **Agent evaluation concepts, failure modes, quality dimensions** | [§12 Agent Evaluation](#12-agent-evaluation--quality-assurance) ⭐ |
 | **Golden dataset eval + LLM-as-judge** | `week10/ex2`, `week10/ex3`, [§12.3](#123-evaluation-methods) ⭐ |
@@ -4605,16 +4611,16 @@ jobs:
 
 ### 12.9 Eval Tools & Libraries Quick Reference
 
-| Tool | Use Case | Install |
-|------|----------|---------|
-| **RAGAS** | RAG quality metrics (faithfulness, relevancy, precision, recall) | `pip install ragas` |
-| **DeepEval** | LLM eval framework, 14+ metrics, CI integration | `pip install deepeval` |
-| **TruLens** | RAG triad evaluation + dashboard | `pip install trulens-eval` |
-| **LangSmith** | LangChain-native eval & tracing (hosted) | `pip install langsmith` |
-| **Promptfoo** | Prompt regression testing, red-teaming, CI gate | `npm install -g promptfoo` |
-| **Pytest + mock** | Behavioural unit tests with mocked LLM | built-in |
-| **Locust** | Load & latency testing | `pip install locust` |
-| **Phoenix (Arize)** | Open-source LLM observability + eval dashboard | `pip install arize-phoenix` |
+| Tool | Use Case | Install | Exercise |
+|------|----------|---------|----------|
+| **RAGAS** | RAG quality metrics (faithfulness, relevancy, precision, recall) | `pip install ragas` | `week10/ex3`, `week10/ex9` ⭐ |
+| **DeepEval** | LLM eval framework, 14+ metrics, CI integration, custom metrics | `pip install deepeval` | `week10/ex10` ⭐ |
+| **TruLens** | RAG triad evaluation + dashboard | `pip install trulens-eval` | — |
+| **LangSmith** | Dataset management, custom evaluators, experiment versioning | `pip install langsmith` | `week3/ex3`, `week10/ex11` ⭐ |
+| **Promptfoo** | Prompt regression testing, red-teaming, CI gate | `npm install -g promptfoo` | — |
+| **Pytest + mock** | Behavioural unit tests with mocked LLM | built-in | `week10/ex4` |
+| **Locust** | Load & latency testing | `pip install locust` | `week12/ex4` |
+| **Phoenix (Arize)** | Open-source LLM observability + eval dashboard | `pip install arize-phoenix` | — |
 
 ---
 
