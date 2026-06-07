@@ -1,10 +1,7 @@
 """
-TODO — Implement the direct LLM agent (no retrieval, no context).
+Direct LLM agent — answers without retrieval.
 
-Used when the orchestrator decides the question doesn't need the knowledge base
-(e.g. "What is 2+2?", "Write me a haiku", "Explain JSON in general").
-
-This is intentionally simple — just a raw LLM call with a helpful system prompt.
+Used for general questions that do not require the knowledge base.
 """
 from __future__ import annotations
 import logging
@@ -27,17 +24,8 @@ async def direct_agent(
     """
     Answer a question with a direct LLM call (no retrieval).
 
-    TODO 1: Call litellm.completion(
-                model=cfg.MODEL,
-                messages=[
-                    {"role": "system", "content": _SYSTEM},
-                    {"role": "user",   "content": request.question},
-                ],
-            )
-    TODO 2: Extract answer = response.choices[0].message.content
-    TODO 3: Return QueryResponse(answer=answer, model=cfg.MODEL,
-                                 citations=[],
-                                 retrieval_mode="none",
-                                 request_id=request_id)
+    TODO 1: Call the LLM with the system prompt and the user's question
+    TODO 2: Extract the answer text from the response
+    TODO 3: Return a QueryResponse with no citations and retrieval_mode set to "none"
     """
     raise NotImplementedError

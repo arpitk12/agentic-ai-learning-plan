@@ -1,27 +1,9 @@
 """
-TODO — Implement the FastAPI app factory with a lifespan.
+FastAPI application factory.
 
-Critical design: the HybridRetriever (and its BM25 index) is loaded ONCE
-at startup and stored on app.state. Routes read it from there. This avoids
-re-loading the ~384-dim embedding model on every request.
-
-Pattern:
-  @asynccontextmanager
-  async def lifespan(app):
-      store     = VectorStore()             # connect to ChromaDB
-      retriever = HybridRetriever(store)    # builds BM25 at startup
-      app.state.store     = store
-      app.state.retriever = retriever
-      yield                                 # app serves requests here
-      # cleanup (nothing needed for ChromaDB)
-
-The app factory (create_app) should:
-  1. Create FastAPI(lifespan=lifespan, title=..., version=...)
-  2. Add RequestMiddleware (from src.api.middleware)
-  3. Include the router (from src.api.routes)
-  4. Return the app
-
-The module-level `app = create_app()` is what uvicorn imports.
+The lifespan handler is the critical design point: it loads the VectorStore
+and HybridRetriever exactly once at startup and stores them on app.state so
+every request handler can access them without globals.
 """
 from __future__ import annotations
 import logging
@@ -43,24 +25,22 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """
-    TODO 1: Create VectorStore() → store
-    TODO 2: Create HybridRetriever(store) → retriever  (builds BM25 index)
-    TODO 3: Log how many chunks are indexed
-    TODO 4: Set app.state.store = store  and  app.state.retriever = retriever
-    TODO 5: yield  (server is now live)
-    TODO 6: Log shutdown message
+    TODO 1: Create a VectorStore and a HybridRetriever (which builds the BM25 index)
+    TODO 2: Log how many chunks are currently indexed
+    TODO 3: Store both on app.state so routes can access them
+    TODO 4: yield to hand control to the running server
+    TODO 5: Log a shutdown message after the yield
     """
     raise NotImplementedError
-    yield   # keep this line — remove the raise above and implement above the yield
+    yield
 
 
 def create_app() -> FastAPI:
     """
-    TODO 7: Instantiate FastAPI(lifespan=lifespan, title="Production RAG Agent API",
-                                version="1.0.0")
-    TODO 8: app.add_middleware(RequestMiddleware)
-    TODO 9: app.include_router(router)
-    TODO 10: return app
+    TODO 6: Create a FastAPI instance using the lifespan handler and basic metadata
+    TODO 7: Register RequestMiddleware
+    TODO 8: Register the router
+    TODO 9: Return the app
     """
     raise NotImplementedError
 

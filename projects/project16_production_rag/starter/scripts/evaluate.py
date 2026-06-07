@@ -1,11 +1,6 @@
 #!/usr/bin/env python
 """
-TODO — Implement the evaluation CLI script.
-
-This script is the CI evaluation gate:
-  - Runs the golden QA evaluation suite
-  - Prints per-case and aggregate scores
-  - sys.exit(1) if aggregate_overall < threshold  ← this is how GitHub Actions fails
+CLI — run the evaluation suite and optionally gate on a quality threshold.
 
 Usage:
   python scripts/evaluate.py
@@ -33,25 +28,23 @@ from src.evaluation.evaluator import run_eval
 
 def parse_args() -> argparse.Namespace:
     """
-    TODO 1: Create ArgumentParser with:
-      --fail-below FLOAT   — override eval threshold (default: use cfg value)
-      --output / -o PATH   — write JSON report to file
-      --verbose / -v       — DEBUG logs
-      --no-gate            — always exit 0 (inspection mode)
+    TODO 1: Build an argument parser with:
+            --fail-below (float) — override the pass threshold
+            --output / -o (path) — write the JSON report to a file
+            --verbose (flag)     — show DEBUG logs
+            --no-gate (flag)     — print results but always exit 0
     """
     raise NotImplementedError
 
 
 async def _run(args: argparse.Namespace) -> None:
     """
-    TODO 2: store     = VectorStore()
-    TODO 3: retriever = HybridRetriever(store)
-    TODO 4: Warn if store.count() == 0 (not ingested yet)
-    TODO 5: report = await run_eval(retriever, request_id="cli-eval")
-    TODO 6: Print per-case table (question, faithfulness, relevancy, overall)
-    TODO 7: Print aggregate row + gate result (PASS / FAIL)
-    TODO 8: If args.output: write report.model_dump() as JSON to file
-    TODO 9: If not args.no_gate and aggregate < threshold: sys.exit(1)
+    TODO 2: Create a VectorStore and a HybridRetriever
+    TODO 3: Warn the user if the store is empty (documents not yet ingested)
+    TODO 4: Run the evaluation suite
+    TODO 5: Print a per-case table and aggregate scores
+    TODO 6: Optionally write the report to a JSON file
+    TODO 7: Exit with code 1 if the aggregate score is below the threshold
     """
     raise NotImplementedError
 

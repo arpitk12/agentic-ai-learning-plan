@@ -1,21 +1,16 @@
 """
-TODO — Implement a recursive character text splitter with overlap.
+Recursive character text splitter with overlap.
 
-Algorithm (recursive character splitting):
-  Separators tried in order: ["\n\n", "\n", ". ", " ", ""]
-  1. Try splitting text on the first separator
-  2. Merge small pieces back together until chunk_size is reached
-  3. Add `overlap` characters of the previous chunk's tail to the next chunk
-  4. Recurse on any piece that is still too large using the next separator
+Splits a RawDocument into fixed-size Chunk objects by trying different
+separators in priority order (paragraph → line → sentence → word → character).
+When a piece is still too long after splitting, it recurses with the next separator.
 
-Each Chunk gets a unique chunk_id built from doc_id + sequential index.
+Overlap causes the tail of the previous chunk to be prepended to the next,
+preserving context across chunk boundaries.
 """
 from __future__ import annotations
-import hashlib
 from src.models import RawDocument, Chunk
 from src.config import cfg
-
-_SEPARATORS = ["\n\n", "\n", ". ", " ", ""]
 
 
 def chunk_document(
@@ -26,23 +21,21 @@ def chunk_document(
     """
     Split a RawDocument into overlapping Chunk objects.
 
-    TODO 1: Call _split_text(doc.content, chunk_size, overlap) to get raw text pieces
-    TODO 2: For each piece, build chunk_id = f"{doc.doc_id}-{i:04d}"
-    TODO 3: Return list of Chunk(chunk_id=..., doc_id=..., title=...,
-                                 source=..., text=..., index=i)
+    TODO 1: Split the document content into text pieces using a recursive splitter
+    TODO 2: Build a unique chunk_id for each piece using the doc_id and its position index
+    TODO 3: Return a list of Chunk objects with all metadata fields populated
     """
     raise NotImplementedError
 
 
 def _split_text(text: str, chunk_size: int, overlap: int) -> list[str]:
     """
-    Recursively split text into pieces of at most chunk_size characters.
+    Recursively split text into pieces no larger than chunk_size characters.
 
-    TODO 4: Iterate through _SEPARATORS
-    TODO 5: For the current separator, split text and recursively handle
-            pieces that are still > chunk_size
-    TODO 6: Merge short pieces together (greedy accumulation up to chunk_size)
-    TODO 7: Prepend overlap chars from previous chunk to the current chunk
-    TODO 8: Return the final list of string pieces
+    TODO 4: Try separators in priority order: paragraph break, line break, sentence end, space, empty string
+    TODO 5: Split on the current separator; for any piece still larger than chunk_size, recurse with the next separator
+    TODO 6: Greedily merge short pieces back together up to chunk_size
+    TODO 7: Prepend the last overlap characters of the previous chunk to each new chunk
+    TODO 8: Return the final list of text pieces
     """
     raise NotImplementedError

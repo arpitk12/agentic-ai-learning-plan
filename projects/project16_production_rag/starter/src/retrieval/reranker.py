@@ -1,20 +1,10 @@
 """
-TODO — Implement LLM-based reranker.
+LLM-based reranker.
 
-Why rerank?
-  Retrieval returns top-K candidates by similarity score.
-  The LLM reranker reads the actual query + each chunk and scores
-  relevance more accurately (but is slower — hence only top-N after retrieval).
-
-Pattern:  top-K retrieved  →  LLM scores each  →  return top-N
-
-Prompt template:
-  "On a scale 0-10, how relevant is this passage to the query?
-   Query: {query}
-   Passage: {chunk}
-   Reply with ONLY a single integer 0-10."
-
-Fallback: if the LLM call fails or parsing fails, return chunks in original order.
+After retrieval returns the top-K candidates, the reranker asks the LLM to score
+each chunk's relevance to the query on a 0–10 scale. The top-N highest-scoring
+chunks are kept for generation. Falls back to the original retrieval order if
+the LLM call fails.
 """
 from __future__ import annotations
 import logging
@@ -31,11 +21,10 @@ def rerank(
     top_n: int = cfg.RERANK_TOP_N,
 ) -> list[RetrievedChunk]:
     """
-    Rerank `chunks` using the LLM and return the top `top_n`.
+    Rerank chunks using the LLM and return the top top_n.
 
-    TODO 1: If chunks is empty or top_n >= len(chunks), return chunks[:top_n]
-    TODO 2: Call _llm_rerank(query, chunks) inside a try/except
-    TODO 3: On any exception, log a warning and return chunks[:top_n] (fallback)
+    TODO 1: Return early if chunks is empty or already small enough to skip reranking
+    TODO 2: Attempt LLM reranking; on any exception fall back to the original order
     """
     raise NotImplementedError
 
@@ -45,12 +34,10 @@ def _llm_rerank(
     chunks: list[RetrievedChunk],
 ) -> list[RetrievedChunk]:
     """
-    Score each chunk with the LLM and return sorted by score (desc).
+    Score each chunk with the LLM and return sorted by score descending.
 
-    TODO 4: For each chunk, build the prompt (see module docstring)
-    TODO 5: Call litellm.completion(model=cfg.MODEL, messages=[...], max_tokens=5, temperature=0)
-    TODO 6: Parse the integer score from the response content
-    TODO 7: Handle parse errors gracefully (default score = 5)
-    TODO 8: Sort chunks by score descending and return
+    TODO 3: For each chunk, ask the LLM to rate how relevant the chunk is to the query
+    TODO 4: Parse the integer score from the response, defaulting to 5 on parse errors
+    TODO 5: Return the chunks sorted by score descending
     """
     raise NotImplementedError

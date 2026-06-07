@@ -1,14 +1,15 @@
 """
-TODO — Implement all API routes.
+API route handlers.
 
-Endpoints to build:
-  GET  /health  → {"status": "ok", "chunks_indexed": N}
-  GET  /stats   → store.stats() dict
-  POST /query   → orchestrator.handle(request, retriever)  → QueryResponse
-  POST /ingest  → ingest_text(...) then retriever.rebuild_bm25() → IngestionResult
-  GET  /eval    → evaluator.run_eval(retriever) → EvalReport dict
+All handlers read shared state from request.app.state.store and
+request.app.state.retriever — objects loaded once at startup by the lifespan.
 
-Tip: access shared state via request.app.state.store / request.app.state.retriever
+Endpoints:
+  GET  /health  — liveness probe, always fast
+  GET  /stats   — vector store statistics
+  POST /query   — answer a question via the orchestrator
+  POST /ingest  — ingest a text snippet and rebuild the BM25 index
+  GET  /eval    — run the evaluation suite
 """
 from __future__ import annotations
 import logging
@@ -29,28 +30,23 @@ def _rid(request: Request) -> str:
 @router.get("/health", tags=["ops"])
 async def health(request: Request):
     """
-    TODO 1: Get store from request.app.state.store
-    TODO 2: Return {"status": "ok", "chunks_indexed": store.count()}
-    TODO 3: Wrap in try/except — on error return {"status": "ok", "chunks_indexed": -1}
+    TODO 1: Return the current status and indexed chunk count.
+            Return a safe fallback if the store is unavailable.
     """
     raise NotImplementedError
 
 
 @router.get("/stats", tags=["ops"])
 async def stats(request: Request):
-    """
-    TODO 4: Get store from request.app.state.store
-    TODO 5: Return store.stats()
-    """
+    """TODO 2: Return vector store statistics."""
     raise NotImplementedError
 
 
 @router.post("/query", response_model=QueryResponse, tags=["rag"])
 async def query(body: QueryRequest, request: Request):
     """
-    TODO 6: Get retriever from request.app.state.retriever
-    TODO 7: Return await handle(body, retriever, _rid(request))
-    TODO 8: Wrap in try/except → raise HTTPException(status_code=500, detail=str(exc))
+    TODO 3: Pass the request to the orchestrator and return the response.
+            Raise a 500 error on any failure.
     """
     raise NotImplementedError
 
@@ -63,20 +59,14 @@ async def ingest(
     source: str = "api",
 ):
     """
-    TODO 9:  Get store + retriever from request.app.state
-    TODO 10: result = ingest_text(text=text, title=title, source=source, store=store)
-    TODO 11: retriever.rebuild_bm25()   ← important! refreshes the keyword index
-    TODO 12: return result
-    TODO 13: Wrap in try/except → raise HTTPException(500, ...)
+    TODO 4: Ingest the text into the vector store.
+    TODO 5: Rebuild the BM25 index so the new content is immediately searchable.
+            Raise a 500 error on any failure.
     """
     raise NotImplementedError
 
 
 @router.get("/eval", tags=["eval"])
 async def eval_endpoint(request: Request):
-    """
-    TODO 14: Get retriever from request.app.state.retriever
-    TODO 15: report = await run_eval(retriever, request_id=_rid(request))
-    TODO 16: return report.model_dump()
-    """
+    """TODO 6: Run the evaluation suite and return the report as a dict."""
     raise NotImplementedError

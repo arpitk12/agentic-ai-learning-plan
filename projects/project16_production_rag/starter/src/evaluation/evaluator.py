@@ -1,19 +1,12 @@
 """
-TODO — Implement the LLM-judge evaluation suite.
+LLM-judge evaluation suite.
 
-Evaluation components:
-  1. Golden dataset — 5 hand-crafted QA pairs based on sample_docs/
-  2. faithfulness_score(answer, context_chunks) — does answer stay grounded in context?
-  3. relevancy_score(question, answer)          — does answer actually address the question?
-  4. run_eval(retriever) — runs all golden cases through the full RAG pipeline
+Runs 5 golden QA pairs through the full RAG pipeline and scores each answer on:
+  faithfulness — does the answer stay within the retrieved context?
+  relevancy    — does the answer address the question?
 
-LLM judge prompt pattern:
-  "Score 0.0–1.0 how [faithful/relevant] the Answer is. Reply with ONLY a decimal."
-
-Aggregate:
-  overall_per_case = (faithfulness + relevancy) / 2
-  aggregate        = mean(overall_per_case for all cases)
-  gate_passed      = aggregate >= cfg.EVAL_PASS_THRESHOLD  (default 0.75)
+Aggregate score = mean((faithfulness + relevancy) / 2) across all cases.
+gate_passed    = aggregate >= cfg.EVAL_PASS_THRESHOLD
 """
 from __future__ import annotations
 import logging
@@ -23,10 +16,6 @@ from src.models import EvalCase, EvalCaseResult, EvalReport, QueryRequest
 from src.agents.orchestrator import handle
 
 logger = logging.getLogger(__name__)
-
-# ── golden dataset ─────────────────────────────────────────────────────────────
-# These 5 QA pairs are based on data/sample_docs/product_overview.md
-# and data/sample_docs/api_reference.md — don't change the questions.
 
 GOLDEN_CASES: list[EvalCase] = [
     EvalCase(
@@ -54,48 +43,39 @@ GOLDEN_CASES: list[EvalCase] = [
 
 def _judge(prompt: str) -> float:
     """
-    TODO 1: Call litellm.completion(model=cfg.MODEL, messages=[{"role":"user","content":prompt}],
-                                    max_tokens=10, temperature=0)
-    TODO 2: Parse the score from the response (handle "0.85", "85", "8.5/10" formats)
-    TODO 3: Clamp to [0.0, 1.0]
-    TODO 4: Return 0.0 on any exception
+    TODO 1: Call the LLM with the given prompt and parse a 0.0–1.0 score from the response.
+    TODO 2: Clamp the result to the valid range and convert percentages if needed.
+    TODO 3: Return 0.0 on any failure.
     """
     raise NotImplementedError
 
 
 def faithfulness_score(answer: str, context_chunks: list[str]) -> float:
     """
-    TODO 5: Build a faithfulness judge prompt:
-              Context = "\n---\n".join(context_chunks)
-              "Score 0.0–1.0 how well the Answer is grounded in Context.
-               1.0=fully grounded, 0.0=fabricated. Reply ONLY a decimal."
-    TODO 6: Return _judge(prompt)
+    TODO 4: Build a prompt asking the LLM to score how well the answer
+            is grounded in the provided context chunks (not hallucinated).
+    TODO 5: Return the judge score.
     """
     raise NotImplementedError
 
 
 def relevancy_score(question: str, answer: str) -> float:
     """
-    TODO 7: Build a relevancy judge prompt:
-              "Score 0.0–1.0 how well the Answer addresses the Question.
-               1.0=fully relevant, 0.0=off-topic. Reply ONLY a decimal."
-    TODO 8: Return _judge(prompt)
+    TODO 6: Build a prompt asking the LLM to score how well the answer
+            addresses the original question.
+    TODO 7: Return the judge score.
     """
     raise NotImplementedError
 
 
 async def run_eval(retriever, request_id: str = "eval") -> EvalReport:
     """
-    Run all GOLDEN_CASES through the RAG pipeline and compute scores.
+    Run all golden cases and return an EvalReport.
 
-    TODO 9:  For each case in GOLDEN_CASES:
-               - Call await handle(QueryRequest(question=case.question), retriever, ...)
-               - Extract answer + citation texts
-               - Compute faithfulness_score + relevancy_score
-               - Build EvalCaseResult(question, reference_answer, generated_answer,
-                                      faithfulness, relevancy, overall=(f+r)/2)
-    TODO 10: Compute aggregate_faithfulness, aggregate_relevancy, aggregate_overall
-    TODO 11: gate_passed = aggregate_overall >= cfg.EVAL_PASS_THRESHOLD
-    TODO 12: Return EvalReport(cases, aggregate_*, gate_passed, threshold)
+    TODO 8: For each case, run the question through the full RAG pipeline
+    TODO 9: Score the generated answer for faithfulness and relevancy
+    TODO 10: Compute aggregate scores across all cases
+    TODO 11: Determine whether the gate passes based on cfg.EVAL_PASS_THRESHOLD
+    TODO 12: Return a fully populated EvalReport
     """
     raise NotImplementedError

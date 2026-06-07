@@ -1,17 +1,14 @@
 """
-TODO — Implement the offline ingestion pipeline and runtime ingest helper.
+Ingestion pipeline connecting loaders, chunker, embedder, and vector store.
 
-Two public functions:
+Two entry points:
 
-1. ingest_directory(source, store, replace_existing=False) → IngestionResult
-   Offline batch pipeline:
-     load_directory → for each doc → chunk → embed batch → store.upsert
-   Called by: scripts/ingest.py (before the API starts)
+ingest_directory — offline batch pipeline, run before the API starts.
+  Loads all documents from disk, chunks, embeds, and stores them.
+  Skips documents already in the store unless replace_existing is True.
 
-2. ingest_text(text, title, source, store) → IngestionResult
-   Runtime single-doc ingestion:
-     create RawDocument → chunk → embed → store.upsert
-   Called by: POST /ingest API route (while API is running)
+ingest_text — runtime ingestion called by the POST /ingest API route.
+  Ingests a single text snippet while the server is live.
 """
 from __future__ import annotations
 import hashlib
@@ -31,20 +28,15 @@ def ingest_directory(
     replace_existing: bool = False,
 ) -> IngestionResult:
     """
-    Ingest all .md/.txt files in `source` directory.
+    Ingest all .md/.txt files in the source directory.
 
-    TODO 1: Call load_directory(source) to get list[RawDocument]
-    TODO 2: For each doc, check if it already exists:
-              existing = {d["metadata"]["doc_id"] for d in store.get_all_documents()}
-              if doc.doc_id in existing and not replace_existing → skip (increment skipped)
-    TODO 3: If replacing, call store.delete_by_doc(doc.doc_id) first
-    TODO 4: Call chunk_document(doc) to get list[Chunk]
-    TODO 5: Call embed_texts([c.text for c in chunks]) to get embeddings
-    TODO 6: Call store.upsert(ids, embeddings, documents, metadatas)
-              metadatas = [{"doc_id": c.doc_id, "chunk_id": c.chunk_id,
-                            "title": c.title, "source": c.source, "index": c.index}
-                           for c in chunks]
-    TODO 7: Accumulate counts, catch per-doc errors, return IngestionResult
+    TODO 1: Load all documents from the source directory
+    TODO 2: For each document, check whether its doc_id already exists in the store
+    TODO 3: Skip existing documents unless replace_existing is True; if replacing, delete existing chunks first
+    TODO 4: Chunk each document into text pieces
+    TODO 5: Embed all chunks for a document in a single batch call
+    TODO 6: Upsert chunks into the vector store with full metadata
+    TODO 7: Track counts and errors; return an IngestionResult when complete
     """
     raise NotImplementedError
 
@@ -56,13 +48,11 @@ def ingest_text(
     store: VectorStore | None = None,
 ) -> IngestionResult:
     """
-    Ingest a single text snippet at runtime (called from POST /ingest).
+    Ingest a single text snippet at runtime.
 
-    TODO 8: Generate a stable doc_id from title+source:
-              doc_id = hashlib.md5(f"{title}:{source}".encode()).hexdigest()[:16]
-    TODO 9: Create RawDocument(doc_id=doc_id, title=title, source=source, content=text)
-    TODO 10: chunk_document → embed_texts → store.upsert (same flow as ingest_directory)
-    TODO 11: Return IngestionResult(documents_processed=1, documents_skipped=0,
-                                   chunks_created=len(chunks), errors=[])
+    TODO 8: Generate a stable doc_id by hashing the title and source together
+    TODO 9: Create a RawDocument from the text, title, source, and doc_id
+    TODO 10: Chunk, embed, and upsert following the same steps as ingest_directory
+    TODO 11: Return an IngestionResult reporting what was created
     """
     raise NotImplementedError

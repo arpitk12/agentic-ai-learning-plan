@@ -1,15 +1,5 @@
 """
-TODO — Implement the RAG agent (retrieve → rerank → generate with citations).
-
-Flow:
-  1. Call retriever.retrieve(question, top_k, mode)   → RetrievalResult
-  2. Call reranker.rerank(question, chunks, top_n)    → list[RetrievedChunk]
-  3. Build grounded system prompt:
-       "Answer using ONLY the context below. Cite [SOURCE] after each claim."
-       + numbered context chunks
-  4. Call LLM with user question
-  5. Parse citations from the answer text
-  6. Return QueryResponse(answer, model, citations, retrieval_mode, request_id)
+RAG agent: retrieve → rerank → generate with grounded citations.
 """
 from __future__ import annotations
 import logging
@@ -30,25 +20,13 @@ async def rag_agent(
     """
     Full RAG pipeline: retrieve → rerank → generate.
 
-    TODO 1: Call retriever.retrieve(request.question, request.top_k, request.mode)
-    TODO 2: Call rerank(request.question, result.chunks, cfg.RERANK_TOP_N)
-    TODO 3: Build context string:
-              context = "\n\n".join(
-                  f"[{i+1}] (source: {c.source})\n{c.text}"
-                  for i, c in enumerate(reranked)
-              )
-    TODO 4: Build system prompt:
-              "You are a helpful assistant. Answer using ONLY the context below.
-               After each factual claim, cite the source like [1] or [2].
-               If the context doesn't contain the answer, say so.\n\nContext:\n" + context
-    TODO 5: Call litellm.completion(model=cfg.MODEL, messages=[system, user])
-    TODO 6: Extract answer = response.choices[0].message.content
-    TODO 7: Build citations list from reranked chunks:
-              Citation(chunk_id=c.chunk_id, text=c.text[:200],
-                       source=c.source, score=c.score)
-    TODO 8: Return QueryResponse(answer=answer, model=cfg.MODEL,
-                                 citations=citations,
-                                 retrieval_mode=result.mode,
-                                 request_id=request_id)
+    TODO 1: Retrieve relevant chunks for the question using the retriever
+    TODO 2: Rerank the retrieved chunks to keep only the most relevant ones
+    TODO 3: Build a numbered context string from the reranked chunks, labelling each with its source
+    TODO 4: Build a grounded system prompt that tells the LLM to answer only from context and cite sources
+    TODO 5: Call the LLM with the system prompt and the user's question
+    TODO 6: Extract the answer text from the LLM response
+    TODO 7: Build a Citation list from the reranked chunks
+    TODO 8: Return a QueryResponse with the answer, citations, retrieval mode, and request id
     """
     raise NotImplementedError
