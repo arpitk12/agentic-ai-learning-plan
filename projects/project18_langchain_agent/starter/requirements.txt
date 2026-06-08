@@ -1,0 +1,36 @@
+# ── LangChain core ───────────────────────────────────────────────
+langchain>=0.2.0
+langchain-core>=0.2.0
+langchain-community>=0.2.0
+langchain-huggingface>=0.0.3
+langchain-litellm>=0.1.0
+
+# ── Tools ─────────────────────────────────────────────────────────
+tavily-python>=0.3.0            # Tavily web search API
+wikipedia>=1.4.0                # Wikipedia tool
+faiss-cpu>=1.8.0                # Local vector store
+
+# ── Embeddings / ML ──────────────────────────────────────────────
+sentence-transformers>=3.0.0
+
+# ── LLM ──────────────────────────────────────────────────────────
+litellm>=1.40.0
+
+# ── API ──────────────────────────────────────────────────────────
+fastapi>=0.111.0
+uvicorn[standard]>=0.29.0
+pydantic>=2.7.0
+pydantic-settings>=2.3.0
+
+# ── Observability ────────────────────────────────────────────────
+structlog>=24.1.0
+langsmith>=0.1.0                # optional but recommended for tracing
+
+# ── Utilities ────────────────────────────────────────────────────
+python-dotenv>=1.0.0
+tenacity>=8.3.0
+httpx>=0.27.0
+
+# ── Testing ──────────────────────────────────────────────────────
+pytest>=8.2.0
+pytest-asyncio>=0.23.0

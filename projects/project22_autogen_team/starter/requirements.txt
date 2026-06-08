@@ -1,0 +1,20 @@
+# ── AutoGen ──────────────────────────────────────────────────────
+pyautogen>=0.3.0                # core AutoGen package
+
+# ── Code execution ────────────────────────────────────────────────
+docker>=7.1.0                   # Docker Python SDK (for DockerCommandLineCodeExecutor)
+
+# ── LLM ──────────────────────────────────────────────────────────
+litellm>=1.40.0
+
+# ── Data models ──────────────────────────────────────────────────
+pydantic>=2.7.0
+pydantic-settings>=2.3.0
+
+# ── Utilities ────────────────────────────────────────────────────
+python-dotenv>=1.0.0
+click>=8.1.0
+structlog>=24.1.0
+
+# ── Testing ──────────────────────────────────────────────────────
+pytest>=8.2.0
