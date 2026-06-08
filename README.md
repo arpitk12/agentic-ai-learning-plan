@@ -42,7 +42,7 @@ agentic_ai_learning_plan/
 | 4 — Production | 7–8 | FastAPI SSE, cost tracking, guardrails | Agent-as-a-Service API |
 | 5 — Advanced | 9–10 | Self-reflection, Reflexion, RAGAS, DeepEval | Self-Improving Coding Agent |
 | 6 — Capstone | 11–12 | MCP, model routing, Docker deploy | Full-Stack Content Pipeline |
-| **Bonus** | — | Security · observability · batch · HITL · eval · customer support · data analyst · doc intelligence · WhatsApp MCP · production RAG · enterprise RAG · **LangChain · LangGraph · CrewAI · LlamaIndex · AutoGen** | Projects 7–22 |
+| **Bonus** | — | Security · observability · batch · HITL · eval · customer support · data analyst · doc intelligence · WhatsApp MCP · production RAG · enterprise RAG · **LangChain · LangGraph · CrewAI · LlamaIndex · AutoGen** · **Enterprise Architect** | Projects 7–23 |
 
 ---
 
@@ -60,7 +60,7 @@ week_N/
 
 ---
 
-## 🏗 All 22 Projects
+## 🏗 All 23 Projects
 
 ### Phase 1–6 (Core Curriculum)
 
@@ -126,6 +126,19 @@ Each has: `README.md` · `GUIDE.md` (step-by-step phases) · `starter/src/` (num
                                   selection · two-agent nested chat with carryover
 ```
 
+### Project 23 — Enterprise Architect Stack
+
+```
+└── project23_enterprise_architect/ PydanticAI typed contracts (RiskAssessment · PolicyCheckResult) ·
+                                    LangGraph 7-node compliance workflow with interrupt() HITL ·
+                                    MCP enterprise servers (document store · policy DB · audit log) ·
+                                    Langfuse cost tracking + LangSmith evaluation datasets ·
+                                    AWS AgentCore (SOC2/HIPAA runtime) + Vertex AI Agent Engine ·
+                                    hash-chained immutable audit trail · Q1 ROI cost report
+```
+
+> **Q1 Goal**: Replace manual compliance document review (~5 hrs/doc, $425/doc) with automated pipeline (~15 min/doc, ~$3.50/doc) — targeting ≥94% cost reduction with full audit trail. See [`enterprise_architect_learning_path.md`](enterprise_architect_learning_path.md) for the 12-week roadmap.
+
 ---
 
 ## 🧭 Framework Selection Guide
@@ -144,6 +157,8 @@ Not sure which framework to use for your project?
 → Full decision flowchart, comparison table, code examples, anti-patterns: **[`framework_selection_guide.md`](framework_selection_guide.md)**
 
 > 💰 **Reduce LLM costs by 70–90%**: See [`token_optimization_guide.md`](token_optimization_guide.md) — token counting, prompt compression, model routing, semantic caching, context management, and 5 exercises.
+
+> 🏢 **Enterprise stack (PydanticAI · LangGraph · MCP · AWS AgentCore · Langfuse)**: See [`enterprise_architect_learning_path.md`](enterprise_architect_learning_path.md) — 12-week Q1 roadmap, compliance patterns, audit trails, cost reduction targets.
 
 ---
 
