@@ -18,11 +18,13 @@ agentic_ai_learning_plan/
 ├── phase4_production/            Weeks 7–8   · FastAPI, SSE, Observability, Guardrails
 ├── phase5_advanced/              Weeks 9–10  · Planning, Self-Reflection, Eval Pipelines
 ├── phase6_capstone/              Weeks 11–12 · MCP, Model Routing, Full-Stack Deploy
-├── projects/                     22 projects — see full list below
+├── phase7_advanced_production/   Weeks 13–16 · Fine-Tuning, Memory, Multi-Modal, Graph RAG, A2A
+├── projects/                     35 projects — see full list below
 ├── guide/                        Additional topic guides
 ├── llm.py                        Unified LLM wrapper (local ↔ cloud, zero code change)
 ├── .env.example                  Copy to .env and fill in your keys
 ├── framework_selection_guide.md  How to choose LangChain / LangGraph / CrewAI / LlamaIndex / AutoGen
+├── enterprise_architect_learning_path.md  Enterprise stack: PydanticAI · MCP · AgentCore · Langfuse
 ├── resources_master.md           Curated papers, courses, and reference links
 ├── PRODUCTION_AGENT_GUIDE.md     Production deployment patterns and checklists
 ├── FREE_CLOUD_LLM.md             Groq, Gemini, Cerebras, OpenRouter setup
@@ -43,6 +45,7 @@ agentic_ai_learning_plan/
 | 5 — Advanced | 9–10 | Self-reflection, Reflexion, RAGAS, DeepEval | Self-Improving Coding Agent |
 | 6 — Capstone | 11–12 | MCP, model routing, Docker deploy | Full-Stack Content Pipeline |
 | **Bonus** | — | Security · observability · batch · HITL · eval · customer support · data analyst · doc intelligence · WhatsApp MCP · production RAG · enterprise RAG · **LangChain · LangGraph · CrewAI · LlamaIndex · AutoGen** · **Enterprise Architect** | Projects 7–23 |
+| **Phase 7** | 13–16 | Fine-tuning (QLoRA/DPO) · Long-term memory (Mem0) · Multi-modal (PDF+Vision+Audio) · DSPy prompt optimization · A/B testing · Advanced guardrails · Graph RAG · Sandboxed tools · A2A protocol · Multi-tenancy · Resilience patterns · Advanced reasoning (ToT/o3) | Projects 24–35 |
 
 ---
 
@@ -60,7 +63,7 @@ week_N/
 
 ---
 
-## 🏗 All 23 Projects
+## 🏗 All 35 Projects
 
 ### Phase 1–6 (Core Curriculum)
 
@@ -141,6 +144,54 @@ Each has: `README.md` · `GUIDE.md` (step-by-step phases) · `starter/src/` (num
 
 ---
 
+### Projects 24–35 (Phase 7 — Advanced Production)
+
+Each has: `README.md` · `starter/starter.py` (numbered TODOs) · phase7 week notes with deep dives
+
+**Priority P0 — Build these first (highest ROI):**
+
+```
+├── project24_finetune_agent/     QLoRA fine-tune llama-3.2-3B on synthetic compliance data ·
+│                                 DPO alignment · vLLM serving · 95% inference cost reduction
+├── project25_memory_agent/       Mem0 all 4 memory types (episodic · semantic · procedural ·
+│                                 user profile) · memory consolidation · multi-user isolation
+└── project26_multimodal_agent/   PDF layout extraction · GPT-4V chart analysis · Whisper audio ·
+                                  multi-modal ChromaDB RAG · cross-modality QA with citations
+```
+
+**Priority P1 — High value, 1 week each:**
+
+```
+├── project27_dspy_optimizer/     DSPy Signatures + ChainOfThought · BootstrapFewShot ·
+│                                 MIPROv2 instruction optimization · +18% accuracy gain
+├── project28_ab_testing/         Hash-based traffic split · shadow mode · chi-square significance ·
+│                                 Bayesian Beta test · MLflow model registry
+├── project29_guardrails/         4-layer safety pipeline: regex injection · PII anonymizer ·
+│                                 Llama Guard 14 hazard categories · NeMo Colang rails
+└── project30_graph_rag/          spaCy entity extraction · Neo4j knowledge graph ·
+                                  LLM-generated Cypher · hybrid graph+vector retrieval ·
+                                  80% accuracy on multi-hop questions (vs 40% vector-only)
+```
+
+**Priority P2–P3 — Complete the production picture:**
+
+```
+├── project31_sandboxed_tools/    E2B cloud sandbox · Docker-in-Docker alternative ·
+│                                 reversibility classifier · tool execution audit log
+├── project32_a2a_protocol/       Google A2A agent cards · cross-framework delegation ·
+│                                 JWT service auth · streaming tasks · 3-agent chain
+├── project33_multitenant/        Per-tenant LangGraph namespace isolation · Redis token
+│                                 bucket rate limiting · ChromaDB namespace isolation ·
+│                                 RBAC capability tiers · Langfuse cost tracking per tenant
+├── project34_resilience/         Circuit breaker (CLOSED/OPEN/HALF_OPEN) · 4-model fallback
+│                                 chain · Saga with compensation · DLQ · idempotency store
+└── project35_reasoning/          Tree of Thought BFS (depth=3, breadth=3) · self-consistency
+                                  majority vote · complexity router · o3-mini integration ·
+                                  MCTS for planning · cost vs accuracy benchmark
+```
+
+---
+
 ## 🧭 Framework Selection Guide
 
 Not sure which framework to use for your project?
@@ -159,6 +210,8 @@ Not sure which framework to use for your project?
 > 💰 **Reduce LLM costs by 70–90%**: See [`token_optimization_guide.md`](token_optimization_guide.md) — token counting, prompt compression, model routing, semantic caching, context management, and 5 exercises.
 
 > 🏢 **Enterprise stack (PydanticAI · LangGraph · MCP · AWS AgentCore · Langfuse)**: See [`enterprise_architect_learning_path.md`](enterprise_architect_learning_path.md) — 12-week Q1 roadmap, compliance patterns, audit trails, cost reduction targets.
+
+> 🚀 **Phase 7 gaps**: Fine-tuning · Long-term memory · Multi-modal · Graph RAG · A/B testing · Guardrails · A2A · Multi-tenancy · Resilience · Advanced reasoning — see [`phase7_advanced_production/`](phase7_advanced_production/) and Projects 24–35.
 
 ---
 
