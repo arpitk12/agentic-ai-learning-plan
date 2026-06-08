@@ -143,6 +143,8 @@ Not sure which framework to use for your project?
 
 → Full decision flowchart, comparison table, code examples, anti-patterns: **[`framework_selection_guide.md`](framework_selection_guide.md)**
 
+> 💰 **Reduce LLM costs by 70–90%**: See [`token_optimization_guide.md`](token_optimization_guide.md) — token counting, prompt compression, model routing, semantic caching, context management, and 5 exercises.
+
 ---
 
 ## ⚡ Quick Start
