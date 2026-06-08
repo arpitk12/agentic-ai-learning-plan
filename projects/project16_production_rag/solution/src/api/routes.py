@@ -1,13 +1,19 @@
 """
 API routes:
   POST /query   — answer a question via the orchestrator (RAG or direct)
-  POST /ingest  — ingest a text snippet at runtime; rebuilds BM25 index
+  POST /ingest  — ingest a text snippet at runtime; rebuilds BM25 index (sync)
   GET  /health  — liveness + chunk count
   GET  /stats   — vector-store stats
   GET  /eval    — run evaluation suite; returns EvalReport
+
+BM25 staleness (async ingestion):
+  When async ingestion completes the Celery worker sets "bm25:stale" in Redis.
+  The /query handler checks this flag and rebuilds the in-memory BM25 index if
+  stale before answering — ensuring newly ingested content is always searchable.
 """
 from __future__ import annotations
 import logging
+import os
 from fastapi import APIRouter, Request, HTTPException
 
 from src.models import QueryRequest, QueryResponse, IngestionResult
@@ -17,6 +23,32 @@ from src.evaluation.evaluator import run_eval
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
+
+REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+
+
+# ── BM25 staleness check (for async ingestion) ───────────────────────────────
+
+def _rebuild_bm25_if_stale(request: Request) -> None:
+    """
+    Check Redis for the "bm25:stale" flag set by the Celery worker after
+    async ingestion. If stale, rebuild the in-memory BM25 index and clear
+    the flag.
+
+    Non-fatal: if Redis is unreachable, we skip silently — the BM25 index
+    will just lag until the next restart or synchronous rebuild.
+    """
+    try:
+        import redis as _redis
+        r = _redis.from_url(REDIS_URL, decode_responses=True)
+        if r.get("bm25:stale") == "1":
+            retriever = getattr(request.app.state, "retriever", None)
+            if retriever:
+                retriever.rebuild_bm25()
+                logger.info("BM25 index rebuilt (triggered by async ingestion)")
+            r.delete("bm25:stale")
+    except Exception as exc:
+        logger.debug("BM25 staleness check skipped (Redis unavailable): %s", exc)
 
 
 # ── helpers ─────────────────────────────────────────────────────────────────
@@ -64,9 +96,16 @@ async def query(body: QueryRequest, request: Request):
     """
     Answer a question.  The orchestrator decides whether to use
     retrieval-augmented generation or a direct LLM call.
+
+    Also checks if the BM25 index is stale (set by async ingestion workers)
+    and rebuilds it transparently before answering.
     """
     rid = _request_id(request)
     retriever = _get_retriever(request)
+
+    # Rebuild BM25 if a Celery worker has ingested new content since last query
+    _rebuild_bm25_if_stale(request)
+
     logger.info("[%s] /query question=%r", rid, body.question[:80])
     try:
         return await handle(body, retriever, rid)

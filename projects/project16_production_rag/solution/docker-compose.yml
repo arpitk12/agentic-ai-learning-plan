@@ -14,6 +14,20 @@ services:
       timeout: 5s
       retries: 5
 
+  # ─── Redis — Celery broker + result backend + BM25 staleness flag ──────────
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes      # persist queue across restarts
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
   # ─── RAG API server ───────────────────────────────────────────────────────
   api:
     build: .
@@ -28,9 +42,12 @@ services:
       CHROMA_HOST: chromadb
       CHROMA_PORT: 8001
       COLLECTION_NAME: prod_rag
+      REDIS_URL: redis://redis:6379/0
       LOG_LEVEL: INFO
     depends_on:
       chromadb:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     command: uvicorn src.api.app:app --host 0.0.0.0 --port 8000 --workers 2
     healthcheck:
@@ -39,5 +56,45 @@ services:
       timeout: 5s
       retries: 3
 
+  # ─── Celery worker — async ingestion pipeline ─────────────────────────────
+  worker:
+    build: .
+    volumes:
+      - ./data:/app/data                             # read/write: can ingest new docs
+    environment:
+      MODEL: ${MODEL:-gemini/gemini-2.0-flash}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      CHROMA_HOST: chromadb
+      CHROMA_PORT: 8001
+      COLLECTION_NAME: prod_rag
+      REDIS_URL: redis://redis:6379/0
+      LOG_LEVEL: INFO
+    depends_on:
+      chromadb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    # 2 concurrent ingestion tasks; increase for higher throughput
+    command: >
+      celery -A src.ingestion.tasks worker
+        --loglevel=info
+        --queues=ingestion
+        --concurrency=2
+        --max-tasks-per-child=50
+    restart: unless-stopped
+
+  # ─── Flower — Celery monitoring UI (optional, remove in prod) ─────────────
+  flower:
+    image: mher/flower:2.0
+    ports:
+      - "5555:5555"
+    environment:
+      CELERY_BROKER_URL: redis://redis:6379/0
+      FLOWER_PORT: 5555
+    depends_on:
+      redis:
+        condition: service_healthy
+
 volumes:
   chroma_data:
+  redis_data:
