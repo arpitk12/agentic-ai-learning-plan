@@ -1,64 +1,117 @@
 # Project 16 — Production RAG Agent
 
 A **production-grade, fully modular RAG system** that mirrors real engineering practice:
-embedding happens once (in an offline ingestion pipeline) and retrieval happens separately
-at serve time. Includes a FastAPI service, MCP server, multi-agent routing, hybrid search,
-an evaluation pipeline, Docker deployment, and a CI/CD quality gate.
+embedding runs in a separate async pipeline (Celery + Redis), retrieval happens at serve
+time, and every layer is independently scalable. Includes a FastAPI service, Celery async
+ingestion workers, Redis message queue, MCP server, multi-agent routing, hybrid search, an
+evaluation pipeline, Docker deployment, and a CI/CD quality gate.
 
 ---
 
 ## 🏗 Architecture
 
 ```
-                  INGESTION PIPELINE (offline — runs on doc update)
-                  ─────────────────────────────────────────────────
-                  data/sample_docs/*.md
-                          │
-                     loader.py       ← loads .md / .txt / .pdf
-                          │
-                     chunker.py      ← recursive splitter (512 tok, 64 overlap)
-                          │
-                     embedder.py     ← sentence-transformers (local, no API cost)
-                          │
-                     chroma_store.py ← persists to data/chroma_db/
-                          │
-                   [ChromaDB on disk or Docker service]
+╔══════════════════════════════════════════════════════════════════════════════╗
+║              OFFLINE INGESTION  (run once per doc update)                   ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║                                                                              ║
+║   data/sample_docs/*.md                                                      ║
+║           │                                                                  ║
+║      loader.py        ← .md / .txt files → RawDocument                      ║
+║           │                                                                  ║
+║      chunker.py       ← recursive splitter (512 chars, 64 overlap)          ║
+║           │                                                                  ║
+║      embedder.py      ← sentence-transformers (local, no API cost, 384-dim) ║
+║           │                                                                  ║
+║      chroma_store.py  ← upsert to ChromaDB collection                       ║
+║           │                                                                  ║
+║   [ChromaDB persists to data/chroma_db/ or HTTP service]                    ║
+║                                                                              ║
+║   CLI:  python scripts/ingest.py --source data/sample_docs/ --verbose       ║
+╚══════════════════════════════════════════════════════════════════════════════╝
 
+╔══════════════════════════════════════════════════════════════════════════════╗
+║           ASYNC INGESTION PIPELINE  (background, non-blocking)              ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║                                                                              ║
+║   POST /ingest/async  ────────────────────────────────────────────────────  ║
+║           │  returns {job_id} in <5ms                                        ║
+║           ▼                                                                  ║
+║      Redis Queue  ("ingestion")                                              ║
+║           │                                                                  ║
+║           ▼                                                                  ║
+║   Celery Worker  (separate process / Docker container)                       ║
+║       load → chunk → embed → store(ChromaDB)                                 ║
+║       set  "bm25:stale" = "1"  in Redis  (TTL 2h)                           ║
+║                                          │                                   ║
+║                                          ▼                                   ║
+║   POST /query  reads flag ───────────────┘                                   ║
+║       → rebuilds BM25 index if stale  (transparent to caller)               ║
+║       → deletes flag                                                         ║
+║                                                                              ║
+║   Track job:   GET /ingest/job/{job_id}   → {status, result, error}         ║
+║   Monitor:     http://localhost:5555       (Flower UI)                       ║
+╚══════════════════════════════════════════════════════════════════════════════╝
 
-                  SERVING PIPELINE (online — every query)
-                  ─────────────────────────────────────────────────
-  Client (curl / WhatsApp / UI)
-          │
-          ▼ POST /query
-  FastAPI  ←── middleware.py (request ID, timing, rate limit)
-          │
-     routes.py
-          │
-     orchestrator.py   ← classify_intent → rag | direct | mcp
-          │
-    ┌─────┴────────────────────────┐
-    ▼                              ▼
-  rag_agent.py              direct_agent.py
-    │                              │
-  retriever.py (hybrid)       LiteLLM (direct)
-    │
-  ┌─┴───────────────────┐
-  BM25 keyword search   ChromaDB vector search
-    └──── RRF fusion ───┘
-          │
-     reranker.py      ← LLM-based cross-attention reranker
-          │
-     LiteLLM (generation with retrieved context)
-          │
-    structured response (Pydantic)
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                     SERVING PIPELINE  (every query)                         ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║                                                                              ║
+║  Client (curl / UI / MCP agent)                                              ║
+║          │                                                                   ║
+║          ▼  POST /query                                                      ║
+║  RequestMiddleware                                                           ║
+║    ├── attach X-Request-ID  (UUID)                                           ║
+║    ├── measure latency  →  X-Latency-Ms header                               ║
+║    └── sliding-window rate limit (60 req/min per IP)                         ║
+║          │                                                                   ║
+║     routes.py  →  _rebuild_bm25_if_stale()  →  orchestrator.handle()        ║
+║          │                                                                   ║
+║     orchestrator.py  (classify_intent — max_tokens=5 LLM call)              ║
+║          │                                                                   ║
+║     ┌────┴──────────────────────┐                                            ║
+║     ▼                           ▼                                            ║
+║  rag_agent.py             direct_agent.py                                    ║
+║     │                           │                                            ║
+║  retriever.py              LiteLLM (raw)                                     ║
+║     │                                                                        ║
+║  ┌──┴──────────────────────┐                                                 ║
+║  BM25 keyword search       ChromaDB vector search                            ║
+║  └──────────┬──────────────┘                                                 ║
+║             ▼  RRF fusion  (1/(k+rank) per list)                             ║
+║          top-K chunks                                                        ║
+║             │                                                                ║
+║        reranker.py  ← LLM scores each chunk 0-10, keeps top-N               ║
+║             │                                                                ║
+║        LiteLLM  ← grounded system prompt ("answer ONLY from context")       ║
+║             │                                                                ║
+║     QueryResponse(answer, citations, retrieval_mode, request_id)            ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
 
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                     MCP SERVER  (optional — stdio subprocess)               ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║                                                                              ║
+║  src/mcp_server/server.py  (FastMCP)                                         ║
+║    ├── search_docs(query, top_k)    ← calls retriever directly               ║
+║    ├── ingest_text(text, title)     ← adds content at runtime                ║
+║    └── get_stats()                  ← collection stats                       ║
+║                                                                              ║
+║  Run:  python -m src.mcp_server.server                                       ║
+╚══════════════════════════════════════════════════════════════════════════════╝
 
-                  MCP SERVER (optional — stdio subprocess)
-                  ─────────────────────────────────────────────────
-  src/mcp_server/server.py
-    ├── search_docs(query)     ← calls retriever directly
-    ├── ingest_text(text)      ← adds content at runtime
-    └── get_stats()            ← collection stats
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                     DOCKER COMPOSE — 5 SERVICES                             ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║                                                                              ║
+║   chromadb :8001   — vector store (persistent volume)                        ║
+║   redis    :6379   — message broker + result backend + BM25 staleness flag   ║
+║   api      :8000   — FastAPI serving pipeline                                ║
+║   worker           — Celery ingestion worker (--concurrency=2)               ║
+║   flower   :5555   — Celery monitoring dashboard                             ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
 ```
 
 ---
@@ -68,49 +121,58 @@ an evaluation pipeline, Docker deployment, and a CI/CD quality gate.
 ```
 project16_production_rag/
 ├── README.md
-├── requirements.txt
-├── .env.example
-├── docker-compose.yml          ← API + ChromaDB services
-├── Dockerfile
-├── .github/
-│   └── workflows/
-│       └── ci.yml              ← lint → test → eval gate → build
-├── src/
-│   ├── config.py               ← all settings from env vars (single source of truth)
-│   ├── models.py               ← Pydantic data models for all I/O
-│   ├── store/
-│   │   └── chroma_store.py     ← ChromaDB abstraction (local or HTTP)
-│   ├── ingestion/
-│   │   ├── loader.py           ← load .md/.txt files from directory
-│   │   ├── chunker.py          ← recursive character splitter
-│   │   ├── embedder.py         ← sentence-transformers wrapper (no API cost)
-│   │   └── pipeline.py         ← orchestrates load→chunk→embed→store
-│   ├── retrieval/
-│   │   ├── retriever.py        ← hybrid BM25+vector search with RRF fusion
-│   │   └── reranker.py         ← LLM-based reranker (top-k → top-n)
-│   ├── agents/
-│   │   ├── orchestrator.py     ← intent classifier → routes to correct agent
-│   │   ├── rag_agent.py        ← retrieval-augmented generation
-│   │   └── direct_agent.py     ← direct LLM (no retrieval, for simple queries)
-│   ├── mcp_server/
-│   │   └── server.py           ← FastMCP server exposing RAG as MCP tools
-│   ├── api/
-│   │   ├── app.py              ← FastAPI app with lifespan (loads retriever once)
-│   │   ├── routes.py           ← /query /ingest /health /stats /eval
-│   │   └── middleware.py       ← request ID, timing, structlog, rate limit
-│   └── evaluation/
-│       └── evaluator.py        ← faithfulness + relevancy + golden dataset eval
-├── tests/
-│   ├── test_ingestion.py       ← pytest: loader, chunker, embedder, pipeline
-│   └── test_api.py             ← pytest: FastAPI routes with TestClient
-├── scripts/
-│   ├── ingest.py               ← CLI: python scripts/ingest.py --source data/sample_docs
-│   └── evaluate.py             ← CLI: python scripts/evaluate.py (outputs JSON + exit code)
-└── data/
-    ├── sample_docs/            ← drop .md/.txt files here to index
-    │   ├── product_overview.md
-    │   └── api_reference.md
-    └── chroma_db/              ← auto-created by ingestion pipeline (gitignored)
+├── GUIDE.md                        ← step-by-step build guide + deployment options
+├── starter/                        ← work here — stub files with TODOs
+│   ├── requirements.txt
+│   ├── .env.example
+│   ├── docker-compose.yml          ← chromadb + redis + api + worker + flower (5 services)
+│   ├── Dockerfile
+│   ├── .github/
+│   │   └── workflows/
+│   │       └── ci.yml              ← lint → test → eval gate → docker build
+│   ├── src/
+│   │   ├── config.py               ← given complete
+│   │   ├── models.py               ← given complete
+│   │   ├── store/
+│   │   │   └── chroma_store.py     ← TODO (10 tasks)
+│   │   ├── ingestion/
+│   │   │   ├── loader.py           ← TODO (10 tasks)
+│   │   │   ├── chunker.py          ← TODO (8 tasks)
+│   │   │   ├── embedder.py         ← TODO (4 tasks)
+│   │   │   ├── pipeline.py         ← TODO (11 tasks)
+│   │   │   └── tasks.py            ← TODO (13 tasks) ★ Celery async worker
+│   │   ├── retrieval/
+│   │   │   ├── retriever.py        ← TODO (15 tasks)
+│   │   │   └── reranker.py         ← TODO (5 tasks)
+│   │   ├── agents/
+│   │   │   ├── orchestrator.py     ← TODO (7 tasks)
+│   │   │   ├── rag_agent.py        ← TODO (8 tasks)
+│   │   │   └── direct_agent.py     ← TODO (3 tasks)
+│   │   ├── mcp_server/
+│   │   │   └── server.py           ← TODO (5 tasks)
+│   │   ├── api/
+│   │   │   ├── app.py              ← TODO (9 tasks)
+│   │   │   ├── routes.py           ← TODO (6 tasks) — sync routes + BM25 staleness check
+│   │   │   ├── async_routes.py     ← TODO (16 tasks) ★ async ingestion endpoints
+│   │   │   └── middleware.py       ← TODO (7 tasks)
+│   │   └── evaluation/
+│   │       └── evaluator.py        ← TODO (12 tasks)
+│   ├── scripts/
+│   │   ├── ingest.py               ← TODO (5 tasks) — offline CLI ingestion
+│   │   └── evaluate.py             ← TODO (7 tasks) — CI quality gate
+│   ├── tests/                      ← given complete (36 pytest cases)
+│   └── data/sample_docs/           ← given (2 TechFlow docs)
+│
+└── solution/                       ← full working implementation — check when stuck
+    ├── src/
+    │   ├── ingestion/
+    │   │   ├── pipeline.py
+    │   │   └── tasks.py            ← Celery tasks: ingest_text_task, ingest_directory_task
+    │   └── api/
+    │       ├── app.py
+    │       ├── routes.py           ← /query with _rebuild_bm25_if_stale()
+    │       └── async_routes.py     ← /ingest/async, /ingest/job/{id}, /ingest/queue/stats
+    └── docker-compose.yml          ← 5 services (chromadb, redis, api, worker, flower)
 ```
 
 ---
@@ -119,84 +181,135 @@ project16_production_rag/
 
 | Pattern | Where |
 |---------|-------|
-| **Separated ingestion from serving** | `scripts/ingest.py` vs `src/api/` — embeddings written once, read many times |
+| **Offline embed, online retrieve** | `scripts/ingest.py` runs before API; embeddings persist in ChromaDB |
+| **Async ingestion queue** | `src/ingestion/tasks.py` — Celery workers, Redis broker, at-least-once delivery (`task_acks_late=True`) |
+| **Non-blocking API** | `POST /ingest/async` returns `{job_id}` in <5ms; caller polls `GET /ingest/job/{id}` |
+| **BM25 staleness flag** | Worker sets `bm25:stale` in Redis → `/query` rebuilds index on next request, then clears flag |
+| **Graceful Redis degradation** | Staleness check is non-fatal — sync `/ingest` still works if Redis is down |
 | **Local embeddings** (no API cost) | `src/ingestion/embedder.py` — sentence-transformers, runs offline |
-| **Hybrid search** (BM25 + vector) | `src/retrieval/retriever.py` — RRF fusion, best of both worlds |
-| **LLM reranker** (top-k → top-n) | `src/retrieval/reranker.py` — cuts noise before generation |
-| **Multi-agent routing** | `src/agents/orchestrator.py` — intent → rag \| direct \| mcp |
-| **MCP server** (tool-based RAG) | `src/mcp_server/server.py` — exposes search as structured MCP tool |
+| **Hybrid search** | `src/retrieval/retriever.py` — BM25 + ChromaDB vector + RRF fusion |
+| **LLM reranker** | `src/retrieval/reranker.py` — top-K → top-N before generation |
+| **Multi-agent routing** | `src/agents/orchestrator.py` — intent → rag \| direct |
+| **MCP server** | `src/mcp_server/server.py` — RAG exposed as MCP tools |
 | **Pydantic everywhere** | `src/models.py` — typed I/O for every interface |
 | **Centralised config** | `src/config.py` — single `.env` → all modules via `cfg` |
-| **Request middleware** | `src/api/middleware.py` — request ID, latency, structlog |
-| **Eval CI gate** | `scripts/evaluate.py` → `sys.exit(1)` if quality falls below threshold |
-| **Docker Compose** | `docker-compose.yml` — API + persistent ChromaDB service |
-| **GitHub Actions CI** | `.github/workflows/ci.yml` — lint → test → eval → docker build |
+| **Request middleware** | `src/api/middleware.py` — UUID request ID, latency header, rate limit |
+| **LLM-judge eval gate** | `scripts/evaluate.py` → `sys.exit(1)` if quality < threshold |
+| **Docker Compose (5 services)** | chromadb + redis + api + worker + flower |
+| **GitHub Actions CI** | lint → test → eval gate → docker build |
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Quick Start — Local (no Docker)
 
 ```bash
-# 1. Install dependencies
+# 1. Enter the starter directory
+cd projects/project16_production_rag/starter
+
+# 2. Create virtual environment
+python -m venv .venv && source .venv/bin/activate
+
+# 3. Install dependencies
 pip install -r requirements.txt
 
-# 2. Set environment variables
+# 4. Configure environment
 cp .env.example .env
-# Edit .env: set MODEL, optionally GEMINI_API_KEY / GROQ_API_KEY
+# Edit .env — set MODEL and your LLM API key
 
-# 3. Ingest documents (embedding pipeline — run once, or on doc update)
-python scripts/ingest.py --source data/sample_docs --verbose
+# 5. Ingest documents (offline pipeline — run once)
+python scripts/ingest.py --source data/sample_docs/ --verbose
 
-# 4. Run evaluation to check quality
-python scripts/evaluate.py
+# 6. Start Redis locally (needed for async routes)
+#    macOS:  brew install redis && redis-server
+#    Or skip — sync POST /ingest still works without Redis
 
-# 5. Start the API server
-uvicorn src.api.app:app --host 0.0.0.0 --port 8000 --reload
+# 7. Start Celery worker in a separate terminal (async ingestion)
+celery -A src.ingestion.tasks worker --loglevel=info --queues=ingestion
 
-# 6. Query it
+# 8. Start the API
+uvicorn src.api.app:app --reload --port 8000
+
+# 9. Query
 curl -X POST http://localhost:8000/query \
   -H "Content-Type: application/json" \
   -d '{"question": "What are the API rate limits?"}'
 ```
 
-## 🐳 Docker Quick Start
+## 🐳 Quick Start — Docker Compose (recommended)
 
 ```bash
+cd projects/project16_production_rag/starter
+
+# Build and start all 5 services
 docker-compose up --build
 
-# Ingest (separate container run)
-docker-compose run --rm api python scripts/ingest.py --source data/sample_docs
+# Ingest documents offline (run inside the worker container)
+docker-compose exec worker python scripts/ingest.py --source data/sample_docs/
 
-# Then query as above
+# Sync ingest — blocks until done, rebuilds BM25 inline
+curl -X POST "http://localhost:8000/ingest?text=New+content&title=MyDoc"
+
+# Async ingest — returns immediately, worker processes in background
+curl -X POST http://localhost:8000/ingest/async \
+  -H "Content-Type: application/json" \
+  -d '{"text": "New product documentation...", "title": "v2 Changelog"}'
+# → {"job_id": "abc-123", "status": "pending"}
+
+# Poll job status until "success"
+curl http://localhost:8000/ingest/job/abc-123
+# → {"status": "success", "result": {"chunks_stored": 6, ...}, "ready": true}
+
+# Celery monitoring dashboard
+open http://localhost:5555
+
+# Interactive API docs
+open http://localhost:8000/docs
 ```
+
+---
+
+## 🔄 Sync vs Async Ingestion
+
+| | `POST /ingest` (sync) | `POST /ingest/async` |
+|---|---|---|
+| **Returns when** | Pipeline complete | Job queued (<5ms) |
+| **API thread blocked** | Yes (100ms–2s+) | No |
+| **Track progress** | Not needed (inline) | `GET /ingest/job/{id}` |
+| **Retries on failure** | No | Yes — 3× with exponential backoff |
+| **BM25 rebuild** | Inline, immediate | Lazy on next `/query` |
+| **Requires Redis** | No | Yes |
+| **Best for** | Dev, small docs | Production, large batches |
 
 ---
 
 ## Milestones
 
 ### Milestone 1 — Ingestion Pipeline
-Run `python scripts/ingest.py --source data/sample_docs`.
-Verify `data/chroma_db/` is created and `GET /stats` shows doc count > 0.
+Implement all files in `src/store/` and `src/ingestion/` (except `tasks.py`).
+Run `python scripts/ingest.py --source data/sample_docs/ --verbose`.
+Verify `GET /stats` shows `chunks > 0`.
 
-### Milestone 2 — Query API
-Run `uvicorn src.api.app:app --reload`.
-`POST /query {"question": "..."}` should return a grounded response with source citations.
+### Milestone 2 — Hybrid Retrieval
+Implement `src/retrieval/retriever.py` and `reranker.py`.
+Compare `mode=vector` vs `mode=bm25` vs `mode=hybrid` on keyword vs semantic queries.
 
-### Milestone 3 — Hybrid Search
-Compare `/query?mode=vector` vs `/query?mode=hybrid`.
-Hybrid should retrieve different (often better) results for keyword-heavy queries.
+### Milestone 3 — Query API
+Implement all agents and the synchronous API layer (app, middleware, routes).
+`POST /query {"question": "..."}` returns a grounded answer with citations.
 
-### Milestone 4 — Evaluation Gate
-Run `python scripts/evaluate.py`.
-All 5 golden questions should pass faithfulness ≥ 0.75. Fix retrieval if they don't.
+### Milestone 4 — Async Ingestion ★
+Implement `src/ingestion/tasks.py` and `src/api/async_routes.py`.
+Also implement `_rebuild_bm25_if_stale()` in `routes.py`.
+Run `docker-compose up`, submit a document via `POST /ingest/async`, poll until done.
+Verify the content appears in the next `/query` response (BM25 staleness check triggered).
 
-### Milestone 5 — Docker Deploy
-`docker-compose up --build` → run ingestion → query the API.
-Check `docker-compose logs api` for structured JSON logs.
+### Milestone 5 — Evaluation Gate
+Implement `src/evaluation/evaluator.py` and `scripts/evaluate.py`.
+Run `python scripts/evaluate.py` — all 5 golden questions score ≥ 0.75.
 
-### Milestone 6 — Extend
-Add your own documents to `data/sample_docs/`, re-run ingestion, verify the new content appears in answers.
-Add a new MCP tool to `src/mcp_server/server.py`.
+### Milestone 6 — CI / Docker
+Push `.github/workflows/ci.yml` (from `solution/`). Watch lint → test → eval → docker build
+pass in GitHub Actions.
 
 ---
 
@@ -206,5 +319,8 @@ Add a new MCP tool to `src/mcp_server/server.py`.
 pip install -r requirements.txt
 ```
 
-> ⚠️ `sentence-transformers` downloads the embedding model (~90MB) on first run.
-> It is cached in `~/.cache/huggingface/` after that.
+> `sentence-transformers` downloads the embedding model (~90 MB) on first run.
+> Cached in `~/.cache/huggingface/` after that.
+
+> `celery[redis]` and `redis` are required for Milestone 4 (async ingestion).
+> Milestones 1–3 work without Redis.

@@ -18,6 +18,11 @@ sentence-transformers>=3.0.0
 # BM25 for hybrid search
 rank-bm25>=0.2.2
 
+# Async ingestion pipeline
+celery[redis]>=5.4.0          # task queue + Redis transport
+redis>=5.0.0                  # Python Redis client (broker + BM25 staleness flag)
+flower>=2.0.0                 # Celery monitoring UI (optional)
+
 # Logging + observability
 structlog>=24.0.0
 prometheus-client>=0.20.0
