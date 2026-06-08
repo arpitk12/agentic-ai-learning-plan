@@ -1,0 +1,52 @@
+# Core
+litellm>=1.40
+openai>=1.30
+python-dotenv>=1.0
+pydantic>=2.7
+pydantic-settings>=2.3
+
+# Multimodal ingestion
+pymupdf>=1.24              # fitz — PDF text + image extraction
+pymupdf4llm>=0.0.17        # PDF → markdown (for structured extraction)
+Pillow>=10.3               # image resizing before base64 encode
+
+# Graph RAG
+spacy>=3.7
+neo4j>=5.20                # Python Neo4j driver
+
+# Vector store
+chromadb>=0.5
+
+# Guardrails
+# Note: LlamaGuard requires transformers + GPU. Install separately if needed:
+#   pip install transformers accelerate torch
+# NeMo Guardrails (optional):
+#   pip install nemoguardrails
+
+# Long-term memory
+mem0ai>=0.1.14
+
+# Resilience
+tenacity>=8.3
+
+# FastAPI
+fastapi>=0.111
+uvicorn[standard]>=0.30
+python-multipart>=0.0.9    # UploadFile support
+sse-starlette>=2.1         # SSE streaming
+
+# Observability
+structlog>=24.2
+prometheus-client>=0.20
+
+# Redis (rate limiting + cache)
+redis>=5.0
+
+# Evaluation
+pytest>=8.2
+pytest-asyncio>=0.23
+ragas>=0.1.7               # RAG faithfulness + relevancy metrics
+
+# Data
+numpy>=1.26
+scipy>=1.13
