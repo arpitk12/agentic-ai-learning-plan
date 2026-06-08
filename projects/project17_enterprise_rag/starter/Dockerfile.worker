@@ -1,0 +1,17 @@
+FROM python:3.11-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    librdkafka-dev gcc g++ \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+# CMD is overridden per service in docker-compose.yml:
+#   chunk-consumer:  python -m src.consumers.chunk_consumer
+#   embed-consumer:  python -m src.consumers.embed_consumer
+#   index-consumer:  python -m src.consumers.index_consumer
+CMD ["python", "-m", "src.consumers.chunk_consumer"]

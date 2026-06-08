@@ -1,0 +1,49 @@
+# ─── Vector store ─────────────────────────────────────────────────────────
+qdrant-client>=1.9.0
+
+# ─── Kafka ────────────────────────────────────────────────────────────────
+confluent-kafka>=2.4.0       # production Kafka client (wraps librdkafka)
+
+# ─── Cache ────────────────────────────────────────────────────────────────
+redis>=5.0.0
+
+# ─── Embeddings & ML ─────────────────────────────────────────────────────
+sentence-transformers>=3.0.0  # embedding model + cross-encoder reranker
+torch>=2.2.0                  # required by sentence-transformers
+transformers>=4.40.0          # NLI model (faithfulness checker)
+scipy>=1.12.0                 # softmax for NLI logits
+spacy>=3.7.0                  # sentence splitting for faithfulness checker
+rank-bm25>=0.2.2              # BM25 keyword retrieval
+
+# ─── API ──────────────────────────────────────────────────────────────────
+fastapi>=0.111.0
+uvicorn[standard]>=0.29.0
+pydantic>=2.7.0
+pydantic-settings>=2.3.0
+python-multipart>=0.0.9
+
+# ─── LLM ──────────────────────────────────────────────────────────────────
+litellm>=1.40.0
+
+# ─── Resilience ───────────────────────────────────────────────────────────
+pybreaker>=1.1.0              # circuit breaker for Qdrant / LLM calls
+tenacity>=8.3.0               # retry with exponential backoff
+
+# ─── Observability ────────────────────────────────────────────────────────
+prometheus-client>=0.20.0
+opentelemetry-api>=1.24.0
+opentelemetry-sdk>=1.24.0
+opentelemetry-instrumentation-fastapi>=0.45b0
+structlog>=24.1.0
+
+# ─── Utilities ────────────────────────────────────────────────────────────
+httpx>=0.27.0
+python-dotenv>=1.0.0
+numpy>=1.26.0
+tqdm>=4.66.0
+click>=8.1.0                  # CLI scripts
+
+# ─── Testing ──────────────────────────────────────────────────────────────
+pytest>=8.2.0
+pytest-asyncio>=0.23.0
+httpx>=0.27.0                 # TestClient
