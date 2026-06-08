@@ -79,12 +79,42 @@ projects/
 ├── project13_data_analyst/       NL question → plan → LLM code gen → subprocess exec → self-correct (3×) → narrative report
 ├── project14_doc_intelligence/   Batch classify → LLM+Pydantic extract → validate → SHA-256 dedup → anomaly detect → HTML report
 ├── project15_whatsapp_agent/     MCP server (FastMCP + RAG) + multi-agent routing + WhatsApp (Twilio) + Telegram + session history
-└── project16_production_rag/     Production RAG: offline embed pipeline · ChromaDB · BM25+vector hybrid · LLM rerank
+├── project16_production_rag/     Production RAG: offline embed pipeline · ChromaDB · BM25+vector hybrid · LLM rerank
                                   · multi-agent orchestrator · FastAPI (lifespan, middleware, rate limit) · MCP server
                                   · LLM-judge eval gate · Docker + CI/CD (GitHub Actions)
+├── project17_enterprise_rag/     Enterprise RAG at 10M docs · zero hallucination · Qdrant · Kafka · GPU embeddings
+├── project18_langchain_agent/    LangChain LCEL · ReAct agent · custom tools · ConversationBufferMemory · astream_events
+├── project19_langgraph_workflow/ LangGraph StateGraph · interrupt() HITL · conditional edges · SqliteSaver · FastAPI SSE
+├── project20_crewai_pipeline/    CrewAI 4-agent team (Researcher→Writer→Editor→SEO) · Pydantic output · hierarchical crew
+├── project21_llamaindex_agent/   LlamaIndex IngestionPipeline · SubQuestionQueryEngine · RouterQueryEngine · ReActAgent
+└── project22_autogen_team/       AutoGen 5-agent GroupChat · custom speaker selection · code execution · nested chat
 ```
 
 Each project has:
+- `README.md` — requirements, architecture diagram, milestones
+- `starter/` — scaffold with numbered TODOs
+- `solution/` — full working implementation with config + `.env.example`
+
+> 📖 **Not sure which framework to use?** See [`framework_selection_guide.md`](framework_selection_guide.md)
+
+---
+
+## 🧭 Framework Selection Guide
+
+| You need… | Use |
+|---|---|
+| Composable chains, tools, basic RAG | **LangChain** (Project 18) |
+| Stateful workflow, branching, human approval | **LangGraph** (Project 19) |
+| Role-based specialist agents (research/content) | **CrewAI** (Project 20) |
+| Document-heavy RAG with complex queries | **LlamaIndex** (Project 21) |
+| Agents that write and execute code | **AutoGen** (Project 22) |
+| High-throughput production API | **Raw Libraries** (Projects 16-17) |
+
+→ Full decision flowchart, comparison table, anti-patterns, and real-world scenarios: **[`framework_selection_guide.md`](framework_selection_guide.md)**
+
+---
+
+## 🏗 Old Projects structure (Phase 1–6)
 - `README.md` — requirements, architecture, milestones, expected output
 - `starter.py` — scaffold with TODO sections (6–8 per project)
 - `solution/solution.py` — full working implementation
