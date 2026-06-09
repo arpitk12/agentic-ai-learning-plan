@@ -60,6 +60,7 @@ agentic_ai_learning_plan/
 | 6 — Capstone | 11–12 | MCP, model routing, Docker deploy | Full-Stack Content Pipeline |
 | **Bonus** | — | Security · observability · batch · HITL · eval · customer support · data analyst · doc intelligence · WhatsApp MCP · production RAG · enterprise RAG · **LangChain · LangGraph · CrewAI · LlamaIndex · AutoGen** · **Enterprise Architect** | Projects 7–23 |
 | **Phase 7** | 13–16 | Fine-tuning (QLoRA/DPO) · Long-term memory (Mem0) · Multi-modal (PDF+Vision+Audio) · DSPy prompt optimization · A/B testing · Advanced guardrails · Graph RAG · Sandboxed tools · A2A protocol · Multi-tenancy · Resilience patterns · Advanced reasoning (ToT/o3) | Projects 24–35 |
+| **System Design** | — | Topology benchmarking · Context budget engine · Full async platform (202+SSE+Celery+checkpointing+idempotency) · Load testing + capacity planning | Projects 37–40 |
 
 ---
 
@@ -77,7 +78,7 @@ week_N/
 
 ---
 
-## 🏗 All 35 Projects
+## 🏗 All 40 Projects
 
 ### Phase 1–6 (Core Curriculum)
 
@@ -202,6 +203,50 @@ Each has: `README.md` · `starter/starter.py` (numbered TODOs) · phase7 week no
 └── project35_reasoning/          Tree of Thought BFS (depth=3, breadth=3) · self-consistency
                                   majority vote · complexity router · o3-mini integration ·
                                   MCTS for planning · cost vs accuracy benchmark
+```
+
+---
+
+### Project 36 — Enterprise Multimodal (Capstone)
+
+```
+└── project36_enterprise_multimodal/ 55-file enterprise capstone: PDF+Vision+Audio ingestion ·
+                                     Graph RAG (Neo4j) · 4-layer guardrails · Mem0 memory ·
+                                     hybrid vector+graph retrieval · circuit breaker ·
+                                     FastAPI + observability · Docker + CI/CD
+```
+
+---
+
+### Projects 37–40 (System Design — Applied)
+
+Each has: `README.md` · `starter/starter.py` (numbered TODOs) · `solution/solution.py`
+
+Companion guide: [`guide/13_system_design.md`](guide/13_system_design.md) — read the relevant section before each project.
+
+```
+├── project37_topology_benchmark/  Benchmark 5 agent topologies (Single ReAct · Orch-Worker ·
+│                                  Pipeline · Fan-Out · Debate) on identical task · LLM-as-judge
+│                                  quality scoring · decision matrix (quality/cost/latency/calls)
+│                                  → guide §2: Agent Topology Patterns
+│
+├── project38_context_engine/      Production context budget engine: allocate 8K window across
+│                                  5 sources (system/memory/RAG/history/tools) · enforce budgets ·
+│                                  4 memory levels (in-context/episodic/semantic/procedural) ·
+│                                  greedy RAG fill · LLM history summarisation · savings report
+│                                  → guide §5: Context Architecture
+│
+├── project39_async_platform/      Full async agent execution platform: POST /run (202) +
+│                                  GET /status (polling) + GET /stream (SSE step events) +
+│                                  GET /result · Celery workers · Redis pub/sub · agent
+│                                  checkpointing (crash recovery) · idempotency keys
+│                                  → guide §9: Async, Queues & Concurrency
+│
+└── project40_scale_loadtest/      Load test (Locust, 10–200 users) → identify bottlenecks →
+                                   fix (response cache · DB connection pool · LLM request queue
+                                   · per-user rate limiter · worker auto-scaler) → capacity plan:
+                                   "system supports N users at p95 < 5s with M workers"
+                                   → guide §10: Scalability Patterns
 ```
 
 ---
