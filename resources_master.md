@@ -44,7 +44,38 @@
 | httpx | Async HTTP |
 | tavily-python | Web search tool |
 
-## 📰 Newsletters & Blogs
+## � System Design for AI Agents (in this repo)
+
+**Full guide**: [`guide/13_system_design.md`](guide/13_system_design.md) — 17 sections:
+
+| Section | What you'll learn |
+|---|---|
+| Agent Topology Patterns | Single / Orchestrator-Worker / Pipeline / Fan-Out / Debate / Hierarchical / Event-driven |
+| Stateless vs Stateful | Trade-offs, hybrid pattern, external state stores |
+| The Agent Loop | max_steps, per-step timeout, total timeout, cost cap, HITL interrupt |
+| Context Architecture | The four memory levels, context budget allocation, assembly order |
+| Tool Layer Design | Least privilege, idempotency, timeout, SSRF prevention, schema design |
+| Memory & Storage | Three-tier pattern (Redis/Postgres/S3/Qdrant), schema for agent runs |
+| Multi-Agent Communication | Shared memory / message passing / event bus / A2A protocol |
+| Async & Queues | Sync vs async decision matrix, Celery task design, parallel tool execution |
+| Scalability | Horizontal scaling, auto-scaling by queue depth, multi-tenancy models, rate limiting |
+| Reliability | Circuit breaker, fallback cascade, checkpointing, idempotency keys |
+| Security | Threat model, input validation, output sanitisation, tool permission matrix |
+| Cost as a Design Constraint | Budget hierarchy, cost attribution, cost-quality frontier |
+| Deployment Architectures | Single process → monolith → microservices → serverless → Kubernetes |
+| Reference Architectures | Perplexity-style search, Cursor-style coding, enterprise doc intelligence |
+| Interview Framework | 6-step framework for system-design interviews on AI agent systems |
+| Decision Cheat Sheet | One-row-per-decision table covering all major architecture choices |
+
+**Related guides in this repo**:
+- [`guide/01_agentic_stack.md`](guide/01_agentic_stack.md) — full layer-by-layer stack
+- [`guide/04_multi_agent.md`](guide/04_multi_agent.md) — complete pattern implementations with code
+- [`guide/06_production_checklist.md`](guide/06_production_checklist.md) — pre-deploy checklist
+- [`phase4_production/week8_observability/resources/token_optimization_guide.md`](phase4_production/week8_observability/resources/token_optimization_guide.md) — token cost optimization (16 sections)
+
+---
+
+## �📰 Newsletters & Blogs
 - **Complete Guide to Production-Ready AI Agents** (start here): https://medium.com/@devkapiltech/a-complete-guide-to-building-production-ready-ai-agents-from-your-first-afternoon-project-to-d5c2f3597565
 - The Batch (DeepLearning.AI): https://www.deeplearning.ai/the-batch/
 - Latent Space: https://www.latent.space/

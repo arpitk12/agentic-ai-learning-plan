@@ -20,7 +20,21 @@ agentic_ai_learning_plan/
 ├── phase6_capstone/              Weeks 11–12 · MCP, Model Routing, Full-Stack Deploy
 ├── phase7_advanced_production/   Weeks 13–16 · Fine-Tuning, Memory, Multi-Modal, Graph RAG, A2A
 ├── projects/                     35 projects — see full list below
-├── guide/                        Additional topic guides
+├── guide/                        Topic guides (see table below)
+│   ├── 01_agentic_stack.md       Full layer-by-layer architecture breakdown
+│   ├── 02_framework_selection.md When to use LangChain / LangGraph / CrewAI / LlamaIndex
+│   ├── 03_rag_architecture.md    RAG design: chunking, embedding, retrieval, reranking
+│   ├── 04_multi_agent.md         All multi-agent patterns with full code
+│   ├── 05_vector_search.md       Vector DB internals: HNSW, IVF, PQ, hybrid BM25+vector
+│   ├── 06_production_checklist.md Pre-deploy hardening checklist
+│   ├── 07_cost_optimization.md   Cost reduction strategies (token + infra)
+│   ├── 08_security.md            Auth, prompt injection, PII, secrets management
+│   ├── 09_observability.md       Logging, metrics, tracing, alerting
+│   ├── 10_deployment.md          Docker, Kubernetes, CI/CD, Helm
+│   ├── 11_exercises_index.md     All 56 exercises with links and difficulty ratings
+│   ├── 12_evaluation.md          RAGAS, DeepEval, LLM-as-judge, red-teaming
+│   └── 13_system_design.md       ★ System design for AI agents: topologies, scalability,
+│                                     reliability, storage, security, interview prep
 ├── llm.py                        Unified LLM wrapper (local ↔ cloud, zero code change)
 ├── .env.example                  Copy to .env and fill in your keys
 ├── framework_selection_guide.md  How to choose LangChain / LangGraph / CrewAI / LlamaIndex / AutoGen
