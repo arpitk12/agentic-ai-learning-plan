@@ -61,6 +61,7 @@ agentic_ai_learning_plan/
 | **Bonus** | — | Security · observability · batch · HITL · eval · customer support · data analyst · doc intelligence · WhatsApp MCP · production RAG · enterprise RAG · **LangChain · LangGraph · CrewAI · LlamaIndex · AutoGen** · **Enterprise Architect** | Projects 7–23 |
 | **Phase 7** | 13–16 | Fine-tuning (QLoRA/DPO) · Long-term memory (Mem0) · Multi-modal (PDF+Vision+Audio) · DSPy prompt optimization · A/B testing · Advanced guardrails · Graph RAG · Sandboxed tools · A2A protocol · Multi-tenancy · Resilience patterns · Advanced reasoning (ToT/o3) | Projects 24–35 |
 | **System Design** | — | Topology benchmarking · Context budget engine · Full async platform (202+SSE+Celery+checkpointing+idempotency) · Load testing + capacity planning | Projects 37–40 |
+| **LLMOps** | — | LLMOps monitoring hub (drift detection · SLOs · alerts) · Prompt version registry (A/B · canary · rollback) · Continuous eval scheduler (golden dataset · regression detection · scheduled alerts) | Projects 41–43 |
 
 ---
 
@@ -78,9 +79,9 @@ week_N/
 
 ---
 
-## 🏗 All 40 Projects
+## 🏗 All 43 Projects
 
-> Projects are classified into 11 learning tracks. See **[`projects/README.md`](projects/README.md)** for the full classification index, skills map, and 6 recommended learning paths.
+> Projects are classified into 12 learning tracks. See **[`projects/README.md`](projects/README.md)** for the full classification index, skills map, and 6 recommended learning paths.
 
 ### Phase 1–6 (Core Curriculum)
 
@@ -249,6 +250,25 @@ Companion guide: [`guide/13_system_design.md`](guide/13_system_design.md) — re
                                    · per-user rate limiter · worker auto-scaler) → capacity plan:
                                    "system supports N users at p95 < 5s with M workers"
                                    → guide §10: Scalability Patterns
+
+### LLMOps Projects
+
+├── project41_llmops_monitoring/   LLMOps monitoring hub: TraceLogger · EmbeddingDriftDetector
+│                                  (KS test) · QualityDriftMonitor (LLM-judge sampling 5%) ·
+│                                  SLOTracker (Prometheus) · AlertManager (Slack/webhook) ·
+│                                  FastAPI dashboard → guide §14: LLMOps
+│
+├── project42_prompt_registry/     Prompt version control: SQLite registry (create/promote/
+│                                  rollback/diff) · ABRouter (deterministic hash split) ·
+│                                  CanaryRouter (10%→50%→100% auto-promote) ·
+│                                  MetricsCollector (per-version perf) · FastAPI API
+│                                  → guide §14 §§3, 7
+│
+└── project43_continuous_eval/     Continuous eval scheduler: GoldenDataset (20 cases) ·
+                                   LLMJudge · EvalRunner · RegressionDetector (absolute +
+                                   trend + new failures) · APScheduler cron · AlertChannel
+                                   (Slack + email) · FastAPI results viewer
+                                   → guide §14 §§5, 6
 ```
 
 ---

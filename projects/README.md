@@ -1,11 +1,11 @@
 # Projects — Classification Index
 
-> 40 projects across 9 learning tracks. Use this as your map.  
+> 43 projects across 12 learning tracks. Use this as your map.  
 > Each group has a clear **what you learn** summary and a **suggested order**.
 
 ---
 
-## Quick Reference — All 40 by Group
+## Quick Reference — All 43 by Group
 
 | # | Project | Group |
 |---|---|---|
@@ -49,6 +49,9 @@
 | 38 | project38_context_engine | 11 — System Design Applied |
 | 39 | project39_async_platform | 11 — System Design Applied |
 | 40 | project40_scale_loadtest | 11 — System Design Applied |
+| 41 | project41_llmops_monitoring | 12 — LLMOps |
+| 42 | project42_prompt_registry | 12 — LLMOps |
+| 43 | project43_continuous_eval | 12 — LLMOps |
 
 ---
 
@@ -223,6 +226,22 @@
 
 ---
 
+## Group 12 — LLMOps
+
+> **What you learn**: Operating LLM agents in production — versioning prompts like code, detecting drift before users notice, running evals on a schedule, and wiring up the full SLO/alert stack.
+
+> **Companion**: [`guide/14_llmops.md`](../guide/14_llmops.md) — read the linked section before each project.
+
+| Project | Guide section | What you build | Core skill |
+|---|---|---|---|
+| [project41_llmops_monitoring](project41_llmops_monitoring/README.md) | §§6, 8, 10 | TraceLogger · EmbeddingDriftDetector (KS test) · QualityDriftMonitor · SLOTracker (Prometheus) · AlertManager · FastAPI dashboard | Full observability + drift detection stack |
+| [project42_prompt_registry](project42_prompt_registry/README.md) | §§3, 7 | SQLite prompt registry (create/promote/rollback/diff) · ABRouter · CanaryRouter (10%→100%) · MetricsCollector · FastAPI API | Prompt version control + safe rollout |
+| [project43_continuous_eval](project43_continuous_eval/README.md) | §§5, 6 | GoldenDataset (20 cases) · LLMJudge · EvalRunner · RegressionDetector · APScheduler cron · Slack+email alerts · FastAPI results viewer | Always-on quality monitoring |
+
+**Prerequisite**: Groups 1, 3, 4 (observability + evaluation concepts first)
+
+---
+
 ## Recommended Learning Paths
 
 ### Path A — "I want to build a production agent as fast as possible" (6–8 weeks)
@@ -240,14 +259,14 @@ Group 1 (Core) → Group 7 (Frameworks) → Group 8 (Real-World Apps)
 ### Path C — "I want to optimize for cost and scale" (3–4 weeks)
 
 ```
-Group 3 (Observability) → Group 11 (System Design) → Group 5 (Data Processing)
+Group 3 (Observability) → Group 11 (System Design) → Group 12 (LLMOps) → Group 5 (Data Processing)
 ```
 > Also: `phase4_production/week8_observability/resources/token_optimization_guide.md`
 
 ### Path D — "I'm preparing for a system design interview on AI agents" (2–3 weeks)
 
 ```
-guide/13_system_design.md (read all 17 sections) → Group 11 (all 4 projects) → Group 10 (infra)
+guide/13_system_design.md (read all 17 sections) → Group 11 (all 4 projects) → Group 10 (infra) → guide/14_llmops.md
 ```
 
 ### Path E — "I want to go deep on advanced techniques" (6–8 weeks)
@@ -260,7 +279,7 @@ Group 1 → Group 6 → Group 9 (Advanced Techniques) → Group 4 (Evaluation)
 
 ```
 Group 1 → Group 2 → Group 3 → Group 4 → Group 5 → Group 6
-         → Group 7 → Group 8 → Group 9 → Group 10 → Group 11
+         → Group 7 → Group 8 → Group 9 → Group 10 → Group 11 → Group 12
 ```
 
 ---
@@ -288,11 +307,13 @@ Group 1 (Core Curriculum)
     └──► Group 10 (Infra)           ← needs Groups 1–9 as foundation
               │
               └──► Group 11 (System Design) ← applies Group 10 concepts empirically
+                        │
+                        └──► Group 12 (LLMOps) ← operates everything you've built
 ```
 
 ---
 
-## Skills You Master (by end of all 40)
+## Skills You Master (by end of all 43)
 
 | Domain | Skills |
 |---|---|
@@ -306,3 +327,4 @@ Group 1 (Core Curriculum)
 | **Advanced techniques** | QLoRA fine-tuning, DPO, DSPy prompt optimization, multi-modal, sandboxed code exec |
 | **System design** | Context budgeting, topology trade-offs, async platforms, capacity planning |
 | **Cost optimization** | Token counting, RAG budgeting, model routing, prompt caching, savings measurement |
+| **LLMOps** | Prompt versioning, drift detection (embedding + quality), SLOs, canary deploy, continuous eval, alert pipelines |

@@ -75,6 +75,32 @@
 
 ---
 
+## 🔄 LLMOps (Guide 14)
+
+> See [`guide/14_llmops.md`](guide/14_llmops.md) for the complete reference (~1,200 lines, 16 sections).
+
+| LLMOps Topic | What it covers |
+|---|---|
+| LLMOps vs MLOps | Why LLM apps need a specialised ops practice |
+| Prompt Registry & Versioning | SQLite registry, Git-based, LangSmith, PromptLayer |
+| Experiment Tracking | MLflow, W&B, LangSmith — what to log per run |
+| Continuous Evaluation | APScheduler + golden dataset + regression detection |
+| Drift Detection | Input drift (KS/TF-IDF), embedding drift (KS on PCA), quality drift (LLM-judge rolling) |
+| Model Registry & Promotion | Staging → Shadow → Canary → Production → Rollback |
+| SLOs for LLM Systems | Latency P50/P95/P99, error rate, quality score, cost/call thresholds |
+| LLMOps Platforms | Langfuse · Arize Phoenix · Helicone · W&B Weave · LangSmith · MLflow comparison |
+| Production Monitoring | Prometheus metrics, Grafana layout, OpenTelemetry + litellm |
+| CI/CD for Agents | Full GitHub Actions workflow with eval gate, Docker, rolling deploy, smoke test |
+| Cost Governance | Budget hierarchy, per-call cap, daily hard stop, model tiering |
+| Reference Architecture | Full stack: Langfuse + Prometheus + Grafana + PagerDuty + prompt registry |
+
+**Related projects**:
+- [`project41_llmops_monitoring`](projects/project41_llmops_monitoring/) — drift detection, SLOs, alerts
+- [`project42_prompt_registry`](projects/project42_prompt_registry/) — prompt versioning, A/B, canary
+- [`project43_continuous_eval`](projects/project43_continuous_eval/) — scheduled evals, regression detection
+
+---
+
 ## �📰 Newsletters & Blogs
 - **Complete Guide to Production-Ready AI Agents** (start here): https://medium.com/@devkapiltech/a-complete-guide-to-building-production-ready-ai-agents-from-your-first-afternoon-project-to-d5c2f3597565
 - The Batch (DeepLearning.AI): https://www.deeplearning.ai/the-batch/

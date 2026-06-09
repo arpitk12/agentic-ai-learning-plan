@@ -23,6 +23,8 @@ A comprehensive reference for building, deploying, and operating production-grad
 | 10 | [**Deployment Playbook**](guide/10_deployment.md) | ~355 lines | Docker, FastAPI, Celery, Railway, Modal, CI/CD |
 | 11 | [**Exercises Index**](guide/11_exercises_index.md) | ~230 lines | All exercises mapped by topic + all 15 projects |
 | 12 | [**Agent Evaluation & Quality Assurance**](guide/12_evaluation.md) | ~555 lines | RAGAS, DeepEval, LangSmith, safety eval, CI gate |
+| 13 | [**System Design for AI Agents**](guide/13_system_design.md) | ~1,600 lines | Topologies, context architecture, async, scalability, reliability, security |
+| 14 | [**LLMOps: Deploy, Monitor & Iterate**](guide/14_llmops.md) | ~1,200 lines | Prompt registry, drift detection, SLOs, CI/CD, cost governance, platforms |
 
 ---
 
@@ -42,6 +44,8 @@ A comprehensive reference for building, deploying, and operating production-grad
 | Deploy with Docker / Railway | [§10 Deployment](guide/10_deployment.md) |
 | Find the right exercise | [§11 Exercises Index](guide/11_exercises_index.md) |
 | Evaluate agent quality | [§12 Evaluation & QA](guide/12_evaluation.md) |
+| Design a production system architecture | [§13 System Design](guide/13_system_design.md) |
+| Monitor, version prompts, detect drift | [§14 LLMOps](guide/14_llmops.md) |
 
 ---
 
