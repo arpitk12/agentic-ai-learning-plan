@@ -80,6 +80,8 @@ week_N/
 
 ## 🏗 All 40 Projects
 
+> Projects are classified into 11 learning tracks. See **[`projects/README.md`](projects/README.md)** for the full classification index, skills map, and 6 recommended learning paths.
+
 ### Phase 1–6 (Core Curriculum)
 
 Each has: `README.md` · `starter.py` (TODOs) · `solution/solution.py`
