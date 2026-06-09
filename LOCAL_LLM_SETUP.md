@@ -131,14 +131,67 @@ response = await achat(messages)
 
 ---
 
-## Recommended Model by Phase
+## Recommended Model by Week & Exercise
 
-| Phase | Recommended Local Model | Cloud Equivalent |
-|---|---|---|
-| Week 1 — LLM APIs | `llama3.2` | any |
-| Week 2-3 — Tool Use, LangGraph | `qwen2.5:7b` | `claude-haiku-4-5-20251001` |
-| Week 4 — RAG | `llama3.2` or `mistral` | any |
-| Week 5-6 — Multi-Agent | `qwen2.5:7b` | `claude-opus-4-5` |
-| Week 7-8 — Production API | `qwen2.5:7b` | `claude-haiku-4-5-20251001` |
-| Week 9-10 — Evals | `mistral` (fast) | `claude-haiku-4-5-20251001` |
-| Projects 4-6 | 🔄 Switch to cloud | `claude-opus-4-5` |
+| Week | Topic | Recommended Local | Cloud Equiv. | Why | Exercises |
+|---|---|---|---|---|---|
+| **1** | LLM APIs, chat | `llama3.2` | any | Basic inference | ex1-ex4 |
+| **2** | Tool use, ReAct | `qwen2.5:7b` | `gpt-4o-mini` | Best tool calling | ex1-ex3 |
+| **3** | LangGraph, frameworks | `qwen2.5:7b` | `claude-opus-4-5` | Reasoning + state mgmt | ex1-ex5 |
+| **4** | RAG, retrieval | `llama3.2`/`mistral` | `gpt-4o-mini` | Fast synthesis | ex1-ex6 |
+| **5** | Multi-agent orchestration | `qwen2.5:7b` | `claude-opus-4-5` | Complex planning | ex1-ex3 |
+| **6** | Parallelism, fan-out | `mistral` | `cerebras/llama3.1-70b` | Speed for async | ex1-ex2 |
+| **7** | FastAPI, production | `qwen2.5:7b` | `gpt-4o-mini` | Cost tracking | ex1-ex5 |
+| **8** | Observability, logging | 🔄 Cloud required | `gpt-4o-mini` | Cost calc, security | ex1-ex4 |
+| **9** | Planning, reflexion | `qwen2.5:7b` | `claude-opus-4-5` | Reasoning chains | ex1-ex4 |
+| **10** | Evaluation, LLM judge | `mistral` | `gpt-4o-mini` | Fast scoring | ex1-ex11 |
+| **11** | MCP, routing | 🔄 Cloud needed | `gpt-4o-mini` | Multi-model ops | ex1-ex5 |
+| **12** | Deployment, K8s | — | `gpt-4o-mini` | Docker, prod serving | ex1-ex5 |
+
+### By Project Group
+
+| Group | Project Range | Focus | Recommended Model |
+|---|---|---|---|
+| **1 (Core)** | P1–P6 | Foundations to capstone | Start local, switch to cloud |
+| **2 (Raw libs)** | P7–P17 | Security, observability, batching | 🔄 Cloud for P8, P15 |
+| **3 (Frameworks)** | P18–P22 | CrewAI, AutoGen, LangGraph showcase | `qwen2.5:7b` → cloud |
+| **4 (Enterprise)** | P23 | Document processing pipeline | 🔄 Cloud required |
+| **5 (Phase 7)** | P24–P35 | Fine-tuning, memory, multimodal | 🔄 Cloud required |
+| **6 (Capstone)** | P36 | Enterprise multimodal agent | 🔄 Cloud required |
+| **7 (System Design)** | P37–P40 | Context engine, scaling, loadtest | Local OK for testing |
+| **8 (LLMOps)** | P41–P43 | Monitoring, prompt versioning, eval | 🔄 Cloud required |
+
+---
+
+## Quick Decision Tree
+
+**Q: I want to start today with zero cost?**
+- A: Use `groq/llama-3.3-70b-versatile` (free, no credit card). Get API key at https://console.groq.com
+
+**Q: I prefer running fully offline?**
+- A: `ollama pull qwen2.5:7b` then `ollama serve`. Works for Weeks 1–7 + Projects 1–22
+
+**Q: Which single model works best across all exercises?**
+- A: `qwen2.5:7b` (local) or `gpt-4o-mini` (cloud). Good tool calling, decent reasoning, low cost
+
+**Q: I'm doing Week 10 (evaluation) — what's fastest?**
+- A: `mistral` (local, 4.1GB) or `groq/qwen-qwq-32b` (cloud, free, very fast)
+
+**Q: I'm hitting Week 8+ (observability, production) — can I stay local?**
+- A: No — you need `gpt-4o-mini` (cloud) to track actual costs and test security hardening
+
+**Q: Should I use Claude for anything?**
+- A: Yes! Weeks 3, 5, 9 benefit from `claude-opus-4-5` (reasoning chains, multi-step planning)
+  - But `qwen2.5:7b` is a good free alternative for these weeks
+
+---
+
+## Model Sizing Reference
+
+| Model | Size | Speed | Tool Calling | Reasoning | Best For |
+|---|---|---|---|---|---|
+| `llama3.2` | 2.0GB | ⚡⚡⚡ | ⭐⭐ | ⭐⭐ | Week 1, basic tasks |
+| `mistral` | 4.1GB | ⚡⚡ | ⭐⭐⭐ | ⭐⭐ | Week 6 (fast), Week 10 (eval) |
+| `qwen2.5:7b` | 4.7GB | ⚡ | ⭐⭐⭐⭐ | ⭐⭐⭐ | **Recommended for Weeks 2–7** |
+| `gpt-4o-mini` | cloud | ⚡⚡ | ⭐⭐⭐⭐ | ⭐⭐⭐ | Production, cost-optimal |
+| `claude-opus-4-5` | cloud | ⚡ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | Complex reasoning (Weeks 3–5, 9) |
