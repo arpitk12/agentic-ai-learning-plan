@@ -43,7 +43,9 @@ agentic_ai_learning_plan/
 ├── PRODUCTION_AGENT_GUIDE.md     Production deployment patterns and checklists
 ├── FREE_CLOUD_LLM.md             Groq, Gemini, Cerebras, OpenRouter setup
 ├── LOCAL_LLM_SETUP.md            Ollama setup and model recommendations
-└── SECURITY.md                   Keeping API keys safe
+├── SECURITY.md                   Keeping API keys safe
+├── FAQ_NO_CODE_TOOLS.md          Why n8n / Zapier are NOT covered (and when to use them)
+└── README.md                     This file
 ```
 
 ---
