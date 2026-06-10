@@ -328,19 +328,40 @@ Recommendation: **qwen2.5:7b** is the best all-rounder
 
 ---
 
-#### **Mac with M4 Pro / M4 Max / M4 Ultra**
+#### **Mac with M4 Pro / M4 Ultra**
 ```
-GPU cores:  12–20 cores (M4 Max)
+GPU cores:  12–20 cores
 Unified RAM: 32+ GB (recommended)
 
 ✅ Can run with optimal speed:
   - All 7B models    Speed: ~40–80 tokens/sec
   - llama2:13b       Speed: ~30–50 tokens/sec
-  - qwen-qwq:32b     Speed: ~15–25 tokens/sec (on Max/Ultra with 32GB+)
+  - qwen-qwq:32b     Speed: ~15–25 tokens/sec (on M4 Ultra with 32GB+)
 
 Recommendation: Use **qwen2.5:7b** for best balance
                Use **qwen-qwq:32b** for complex reasoning tasks
                Runs entire curriculum locally without compromise
+```
+
+---
+
+#### **Mac with M5 Pro**
+```
+GPU cores:  20 cores
+Unified RAM: 36 GB (recommended)
+
+✅ Can run with excellent speed:
+  - All 7B models    Speed: ~40–55 tokens/sec
+  - llama2:13b       Speed: ~23–32 tokens/sec
+  - qwen-qwq:32b     Speed: ~15–20 tokens/sec (very smooth)
+
+✅ Can also run:
+  - Larger models    Speed: Good performance even on larger variants
+
+Recommendation: **qwen2.5:7b** for best overall performance
+               **qwen-qwq:32b** for reasoning-heavy tasks (Weeks 5, 9)
+               **mistral** for fast iteration on coding
+               All models run smoothly; best value for the performance tier
 ```
 
 ---
@@ -363,6 +384,7 @@ Recommendation: Use **qwen2.5:7b** for best balance
 | MacBook Pro M3 Max | 2024 | 12–18 core | 20–40 GPU | 128 GB | ~40–60 tok/s | ~25–35 tok/s | Overkill |
 | MacBook Pro M4 | 2025 | 10–12 core | 10 GPU | 24 GB | ~25–35 tok/s | ~14–20 tok/s | Next-gen |
 | MacBook Pro M4 Pro | 2025 | 12–14 core | 20 GPU | 36 GB | ~35–50 tok/s | ~20–30 tok/s | **Future pick** |
+| MacBook Pro M5 Pro | 2026 | 12–14 core | 20 GPU | 36 GB | ~40–55 tok/s | ~23–32 tok/s | Latest, top-tier |
 | Mac Studio M2 Max | 2023 | 12 core | 19 GPU | 128 GB | ~45–60 tok/s | ~28–40 tok/s | Desktop powerhouse |
 
 ---
