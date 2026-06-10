@@ -45,6 +45,7 @@ agentic_ai_learning_plan/
 ├── LOCAL_LLM_SETUP.md            Ollama setup and model recommendations
 ├── SECURITY.md                   Keeping API keys safe
 ├── FAQ_NO_CODE_TOOLS.md          Why n8n / Zapier are NOT covered (and when to use them)
+├── QUANTIZATION_GUIDE.md         Model quantization (INT8, 4-bit QLoRA, GGUF) with math
 └── README.md                     This file
 ```
 
