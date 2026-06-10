@@ -456,37 +456,75 @@ Requires: **16 GB RAM** minimum for two 7B models
 
 ### Recommended Setup by Mac Model & Budget
 
-#### **Budget: <$1000 (MacBook Air M3)**
+#### **Budget: <$1000 (MacBook Air M3 with 16GB RAM)**
 ```
-RAM: 16–24 GB
+RAM: 16 GB
 Recommended model: qwen2.5:7b
 Backup: mistral:7b (faster when speed matters)
 Speed: Good enough (~15–20 tok/s)
 Use for: Weeks 1–7 + some Week 9
-Limitation: Week 8+ better on cloud (observability, costs)
+Limitation: Tight on RAM, Week 8+ better on cloud
+Example: MacBook Air M3 + 16GB unified memory
 ```
 
-#### **Mid-range: $1500–2500 (MacBook Pro M3 Pro)**
+#### **Value: $1200–1800 (MacBook Air M4 with 24GB RAM or Pro M3 with 18GB)**
 ```
-RAM: 18–36 GB
-Primary: qwen2.5:7b (best tool calling)
-Secondary: mistral:7b (coding tasks)
-Tertiary: qwen-qwq:32b (heavy reasoning, optional)
-Speed: Excellent (~25–40 tok/s for 7B)
+RAM: 18–24 GB
+Recommended: qwen2.5:7b (primary, best tool calling)
+Secondary: mistral:7b (coding tasks, fast iteration)
+Speed: Very good (~20–30 tok/s for 7B)
 Use for: Full curriculum Weeks 1–9 locally
-Limitation: Week 8+ better on cloud (cost tracking)
+Can add: qwen-qwq:32b if you have 24GB+ (for Week 5, 9 heavy reasoning)
+Example: MacBook Air M4 + 24GB or Pro M3 + 18GB
 ```
 
-#### **Premium: >$3000 (MacBook Pro M3/M4 Max)**
+#### **Mid-range: $1800–2500 (MacBook Pro M3 Pro / M4 with 24GB+ RAM)**
+```
+RAM: 24–36 GB
+Primary: qwen2.5:7b (general purpose, tool calling)
+Secondary: mistral:7b (coding tasks, ~25–35 tok/s)
+Tertiary: qwen-qwq:32b (heavy reasoning, Week 5 + 9)
+Speed: Excellent (~25–45 tok/s for 7B models)
+Use for: Full curriculum Weeks 1–10 entirely locally
+Can run: 2–3 models simultaneously if needed
+Example: MacBook Pro M3 Pro 12-core + 24GB or M4 + 24GB
+```
+
+#### **Latest: $2500–3500 (MacBook Pro M5 Pro with 36GB RAM)**
+```
+RAM: 36 GB (recommended)
+Primary: qwen2.5:7b (best balance of quality + speed)
+Secondary: qwen-qwq:32b (complex reasoning, Weeks 5 & 9)
+Tertiary: mistral:7b (ultra-fast coding iterations, ~40–55 tok/s)
+Speed: Optimal (~40–55 tok/s for 7B, ~15–20 tok/s for 32B)
+Use for: Entire curriculum locally, zero cloud dependency
+Can run: 2–3 models with comfort, or evaluate all models in parallel
+Example: MacBook Pro M5 Pro + 36GB (latest generation)
+✨ Best value for serious local development
+```
+
+#### **Premium: >$3500 (MacBook Pro M4/M5 Max with 36GB+ RAM)**
 ```
 RAM: 36–96 GB
-Primary: qwen2.5:7b (general purpose)
-Secondary: qwen-qwq:32b (reasoning tasks, Week 5, 9)
-Tertiary: mistral:7b (coding when speed needed)
-Speed: Excellent (~40–60 tok/s)
-Use for: Full curriculum entirely locally
-Can run: Full stack + multiple models simultaneously
+Primary: qwen2.5:7b (production-ready)
+Secondary: qwen-qwq:32b (best reasoning available locally)
+Tertiary: mistral:7b + Neural Chat (various use cases)
+Speed: Overkill for this curriculum (~40–80 tok/s)
+Use for: Enterprise deployments, multiple projects simultaneously
+Can run: All models + cloud APIs in parallel
+Example: MacBook Pro M5 Max + 48–96GB (future-proofed)
 ```
+
+---
+
+### Quick Recommendation (TL;DR)
+
+| Goal | Budget | Mac Model | RAM | Primary Model |
+|---|---|---|---|---|
+| **Try it out** | <$1K | Air M3 | 16GB | mistral (faster) |
+| **Full course** | $1.5K | Pro M3 or Air M4 | 24GB | qwen2.5:7b |
+| **Best value** | $2.5K | Pro M5 Pro | 36GB | qwen2.5:7b + qwen-qwq:32b |
+| **Enterprise** | >$3.5K | Pro M5 Max | 48GB+ | All models available |
 
 ---
 
