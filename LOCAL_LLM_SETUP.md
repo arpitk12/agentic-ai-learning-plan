@@ -82,6 +82,161 @@ python llm.py
 
 ---
 
+## Managing Models in Ollama
+
+### Check Which Models Are Installed
+
+```bash
+ollama list
+```
+
+**Output example:**
+```
+NAME                    ID              SIZE      MODIFIED
+qwen2.5:7b              a82ef2d38b90    4.7GB     2 hours ago
+mistral:latest          42beaa672123    4.1GB     3 days ago
+llama3.2:latest         e5722e2fff3e    2.0GB     1 week ago
+```
+
+---
+
+### Check Which Model Is Currently Running
+
+```bash
+# While ollama serve is running in another terminal:
+curl http://localhost:11434/api/tags
+
+# Returns JSON with all loaded models. Check if any are "running"
+# To see the active model:
+ps aux | grep ollama
+```
+
+Or in your Python code, check the `.env` file:
+
+```bash
+grep MODEL .env
+# Output: MODEL=ollama/qwen2.5:7b
+```
+
+---
+
+### Switch to a Different Model
+
+**Option 1: Change `.env` file**
+
+```bash
+# Edit .env
+# Change: MODEL=ollama/qwen2.5:7b
+# To:     MODEL=ollama/mistral
+
+# Then restart your Python script
+python exercise.py
+```
+
+**Option 2: Specify model at runtime**
+
+```python
+from llm import chat
+
+# Override the .env MODEL setting
+response = chat(
+    messages=[{"role": "user", "content": "Hello"}],
+    model="ollama/mistral"  # Use mistral instead of qwen2.5
+)
+```
+
+**Option 3: Run multiple models simultaneously**
+
+```bash
+# Terminal 1: Start primary model
+ollama serve --model qwen2.5:7b
+
+# Terminal 2: Start secondary model on different port
+ollama serve --model mistral --addr 127.0.0.1:11435
+
+# Terminal 3: Run your Python code with logic to choose:
+```
+
+```python
+from llm import chat
+
+# For tool calling (primary)
+response = chat(messages, model="ollama/qwen2.5:7b", base_url="http://localhost:11434/v1")
+
+# For fast eval (secondary)
+response = chat(messages, model="ollama/mistral", base_url="http://localhost:11435/v1")
+```
+
+---
+
+### Stop a Model / Free Up Memory
+
+**Option 1: Stop Ollama completely**
+
+```bash
+# Kill the ollama serve process
+# Press Ctrl+C in the terminal where ollama serve is running
+```
+
+**Option 2: Unload model from memory (keep Ollama running)**
+
+```bash
+# This tells Ollama to release the model from RAM but keep daemon running
+curl -X DELETE http://localhost:11434/api/generate -d '{"model":"qwen2.5:7b"}'
+
+# Or use ollama CLI (if available):
+ollama stop qwen2.5:7b
+```
+
+**Option 3: Remove model completely**
+
+```bash
+# Delete model from disk (~4.7GB freed for qwen2.5:7b)
+ollama rm qwen2.5:7b
+```
+
+---
+
+### Memory Management
+
+**Check how much memory is being used:**
+
+```bash
+# macOS
+vm_stat
+
+# Linux
+free -h
+
+# See which process is using memory
+ps aux | grep ollama
+top -o VIRT -p $(pgrep ollama)
+```
+
+**Free up memory quickly:**
+
+```bash
+# Stop Ollama (releases all model memory)
+# Then check:
+vm_stat  # Should show significant decrease in used memory
+
+# Or just unload the current model:
+curl http://localhost:11434/api/generate -X DELETE
+```
+
+**Auto-unload after inactivity:**
+
+Ollama automatically unloads models from memory after ~5 minutes of inactivity.
+You can configure this in `~/.ollama/ollama.ini` (create if doesn't exist):
+
+```ini
+num_keep = 3              # Keep last 3 models in memory
+num_gpu_layers = 35       # Adjust for your GPU (higher = faster)
+main_gpu = 0              # Use first GPU
+```
+
+---
+
 ## Using `llm.py` in Exercises
 
 All exercises import from `llm.py` instead of the Anthropic SDK directly.
